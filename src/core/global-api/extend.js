@@ -16,26 +16,31 @@ export function initExtend (Vue: GlobalAPI) {
   /**
    * Class inheritance
    */
+  // 继承Vue构造函数的一些方法和属性
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {}
     const Super = this
     const SuperId = Super.cid
     const cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = {})
     if (cachedCtors[SuperId]) {
+      //如果被缓存过了提前返回这个子类构造函数Sub
       return cachedCtors[SuperId]
     }
 
     const name = extendOptions.name || Super.options.name
     if (process.env.NODE_ENV !== 'production' && name) {
+      // 校验组件的name
       validateComponentName(name)
     }
-
+   //实例化子类构造函数的时候会执行_init方法传入options参数
     const Sub = function VueComponent (options) {
       this._init(options)
     }
+    // 继承了Vue构造函数
     Sub.prototype = Object.create(Super.prototype)
     Sub.prototype.constructor = Sub
     Sub.cid = cid++
+    //定义子类构造函数的options属性为这个组件对象的属性和Vue根实例的属性合并
     Sub.options = mergeOptions(
       Super.options,
       extendOptions
@@ -75,6 +80,7 @@ export function initExtend (Vue: GlobalAPI) {
     Sub.sealedOptions = extend({}, Sub.options)
 
     // cache constructor
+    // 缓存了这个子类构造函数
     cachedCtors[SuperId] = Sub
     return Sub
   }

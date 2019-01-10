@@ -33,6 +33,7 @@ import {
 } from 'weex/runtime/recycle-list/render-component-template'
 
 // inline hooks to be invoked on component VNodes during patch
+//执行installComponentHooks函数的时候会用到这个对象
 const componentVNodeHooks = {
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
@@ -98,6 +99,7 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
+//当createElement第一个参数为一个组件对象时，执行下面的方法
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
@@ -109,10 +111,13 @@ export function createComponent (
     return
   }
 
+  //_base为Vue构造函数（src/core/global-api/index.js）
   const baseCtor = context.$options._base
 
   // plain options object: turn it into a constructor
   if (isObject(Ctor)) {
+    //如果第一个参数为对象时调用Vue.extend()传入这个对象，返回一个子类的构造器函数
+    // Vue.extend在src/core/global-api/extend.js
     Ctor = baseCtor.extend(Ctor)
   }
 
@@ -183,13 +188,17 @@ export function createComponent (
   }
 
   // install component management hooks onto the placeholder node
+  //为组件添加不同的生命周期函数
   installComponentHooks(data)
 
   // return a placeholder vnode
   const name = Ctor.options.name || tag
+  //组件同样也会生成一个vnode，他的3，4，5参数为空（children,text,elm）
   const vnode = new VNode(
+    // 组件vnode的tag名和一般的不一样
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
     data, undefined, undefined, undefined, context,
+    //第6个参数（componentOptions）即构造函数,props，listeners，tag,children组成的对象
     { Ctor, propsData, listeners, tag, children },
     asyncFactory
   )
@@ -220,6 +229,7 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
+  //componentOptions即传入vnode类的第6个构造函数（201+），这里等于new Ctor(options),等于执行了内部的_init方法(src/core/global-api/extend.js:37)
   return new vnode.componentOptions.Ctor(options)
 }
 
