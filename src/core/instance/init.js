@@ -30,6 +30,7 @@ export function initMixin (Vue: Class<Component>) {
     // a flag to avoid this being observed
     vm._isVue = true
     // merge options
+    //如果是一个组件对象(通过create-component.js调用的_init方法的_isComponent为true)
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
@@ -76,10 +77,13 @@ export function initMixin (Vue: Class<Component>) {
   }
 }
 
+//组件的初始化
 export function initInternalComponent (vm: Component, options: InternalComponentOptions) {
   const opts = vm.$options = Object.create(vm.constructor.options)
   // doing this because it's faster than dynamic enumeration.
+  // 组件的options会有_parentVnode属性(占位符vnode)(src/core/vdom/create-component.js:218)
   const parentVnode = options._parentVnode
+  //parent为当前vm的父组件实例
   opts.parent = options.parent
   opts._parentVnode = parentVnode
 

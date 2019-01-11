@@ -20,7 +20,7 @@ import {
 
 export let activeInstance: any = null
 export let isUpdatingChildComponent: boolean = false
-
+//将vm实例赋值给activeInstance(activeInstance和prevActiveInstance是父子关系)
 export function setActiveInstance(vm: Component) {
   const prevActiveInstance = activeInstance
   activeInstance = vm
@@ -34,10 +34,12 @@ export function initLifecycle (vm: Component) {
 
   // locate first non-abstract parent
   let parent = options.parent
+  //如果这个组件有父组件
   if (parent && !options.abstract) {
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
     }
+    //将父组件的$children属性添加这个子组件的实例
     parent.$children.push(vm)
   }
 
@@ -61,7 +63,9 @@ export function lifecycleMixin (Vue: Class<Component>) {
     const vm: Component = this
     const prevEl = vm.$el
     const prevVnode = vm._vnode
+    //将vm实例赋值给activeInstance,返回一个将activeInstance从vm实例变成原始值的函数
     const restoreActiveInstance = setActiveInstance(vm)
+    //_vnode是子组件的渲染vnode,$vnode是父组件的中的占位vnode(类似<hello-world></hello-world>)
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
@@ -69,9 +73,11 @@ export function lifecycleMixin (Vue: Class<Component>) {
       // initial render
       // patch方法定义在src/core/vdom/patch.js:706+
       // vm.$el是指原始的dom节点即id="app"的dom,vnode是vue构建的新的虚拟dom
+      /** 生成真实的dom节点 **/
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
+      //如果有prevVnode,即是子组件vnode的__patch__方法,会传入2个参数
       vm.$el = vm.__patch__(prevVnode, vnode)
     }
     restoreActiveInstance()
@@ -141,7 +147,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
   }
 }
 
-//挂载节点(beforeMounte钩子)
+//挂载节点(执行$mount会执行这个函数)
 export function mountComponent (
   vm: Component,
   el: ?Element,
@@ -192,11 +198,12 @@ export function mountComponent (
       measure(`vue ${name} patch`, startTag, endTag)
     }
   } else {
-    /**一般会走到这里,将vnode挂载到dom节点,核心逻辑**/
-    // vm_render方法在src/core/instance/render.js:63中定义,返回一个完整的vnode
     updateComponent = () => {
       //hydrating和SSR有关一般为false
-      // 上文59行定义_update方法
+      /**
+       * 一般会走到这里,_render方法将实例转化为vnode(src/core/instance/render.js:63)
+       * _update(62)方法将vnode挂载到dom节点,核心逻辑
+       * **/
       vm._update(vm._render(), hydrating)
     }
   }

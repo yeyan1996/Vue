@@ -63,6 +63,7 @@ export function renderMixin (Vue: Class<Component>) {
 
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
+    //如果是子组件会有_parentVnode属性,即父组件中的占位符(src/core/vdom/create-component.js:225)
     const { render, _parentVnode } = vm.$options
 
     if (_parentVnode) {
@@ -71,14 +72,14 @@ export function renderMixin (Vue: Class<Component>) {
 
     // set parent vnode. this allows render functions to have access
     // to the data on the placeholder node.
+    //父组件中的占位符赋值给vm的$vnode属性
     vm.$vnode = _parentVnode
     // render self
     let vnode
     try {
-      //执行render函数,上下文为vm实例,然后传入createElement函数作为参数
-      //$createElement定义在上面36行
-      //生产环境下vm._renderProxy等于vm,开发环境会经过一层自定义错误的代理(src/core/instance/proxy.js)
-      /** 返回生成的vnode **/
+      //执行render函数,上下文为vm实例,然后传入createElement(36)函数作为参数
+      // 生产环境下vm._renderProxy等于vm,开发环境会经过一层自定义错误的代理(src/core/instance/proxy.js)
+      /**将组件实例转为vnode **/
       vnode = render.call(vm._renderProxy, vm.$createElement)
     } catch (e) {
       handleError(e, vm, `render`)
@@ -109,6 +110,7 @@ export function renderMixin (Vue: Class<Component>) {
       vnode = createEmptyVNode()
     }
     // set parent
+    //将vnode的parent属性指向在父组件中占位vnode
     vnode.parent = _parentVnode
     return vnode
   }
