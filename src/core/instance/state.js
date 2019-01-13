@@ -86,6 +86,7 @@ function initProps (vm: Component, propsOptions: Object) {
           vm
         )
       }
+      //将props的key变成响应式
       defineReactive(props, key, value, () => {
         if (!isRoot && !isUpdatingChildComponent) {
           warn(
@@ -153,7 +154,7 @@ function initData (vm: Component) {
       proxy(vm, `_data`, key)
     }
   }
-  // Todo 观察data(响应式)
+  // 观察data(src/core/observer/index.js:110)
   // observe data
   observe(data, true /* asRootData */)
 }

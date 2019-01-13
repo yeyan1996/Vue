@@ -136,17 +136,18 @@ strats.data = function (
 /**
  * Hooks and props are merged as arrays.
  */
+//返回了一个生命周期组成的数组
 function mergeHook (
   parentVal: ?Array<Function>,
   childVal: ?Function | ?Array<Function>
 ): ?Array<Function> {
-  return childVal
-    ? parentVal
-      ? parentVal.concat(childVal)
-      : Array.isArray(childVal)
-        ? childVal
-        : [childVal]
-    : parentVal
+  return childVal ?
+    parentVal ?
+      parentVal.concat(childVal) //父子都有生命周期就用父的加上子的(数组顺序先父=》子)
+      : Array.isArray(childVal) ? //子有生命周期但是父没有时，判断子是否是由生命周期函数组成的数组
+      childVal //直接返回
+        : [childVal] //用数组包裹确保是一个数组
+    : parentVal //子没有生命周期需要合并的就用父的
 }
 
 LIFECYCLE_HOOKS.forEach(hook => {
@@ -241,6 +242,7 @@ strats.provide = mergeDataOrFn
 /**
  * Default strategy.
  */
+//默认合并策略，child没有提供这个属性就用父亲的
 const defaultStrat = function (parentVal: any, childVal: any): any {
   return childVal === undefined
     ? parentVal
@@ -366,6 +368,7 @@ function assertObjectType (name: string, value: any, vm: ?Component) {
  * Merge two option objects into a new one.
  * Core utility used in both instantiation and inheritance.
  */
+//合并配置(data,computed,watch,methods,生命周期钩子)
 export function mergeOptions (
   parent: Object,
   child: Object,
@@ -382,7 +385,7 @@ export function mergeOptions (
   normalizeProps(child, vm)
   normalizeInject(child, vm)
   normalizeDirectives(child)
-  
+
   // Apply extends and mixins on the child options,
   // but only if it is a raw options object that isn't
   // the result of another mergeOptions call.
@@ -391,6 +394,7 @@ export function mergeOptions (
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm)
     }
+    //如果传入的options含有mixins就递归调用
     if (child.mixins) {
       for (let i = 0, l = child.mixins.length; i < l; i++) {
         parent = mergeOptions(parent, child.mixins[i], vm)
@@ -408,6 +412,7 @@ export function mergeOptions (
       mergeField(key)
     }
   }
+  //找strats对象中对应的合并策略strat，执行对应策略的合并，在上面有写所有的合并策略
   function mergeField (key) {
     const strat = strats[key] || defaultStrat
     options[key] = strat(parent[key], child[key], vm, key)
@@ -420,6 +425,7 @@ export function mergeOptions (
  * This function is used because child instances need access
  * to assets defined in its ancestor chain.
  */
+//传进来的options有2中（父类Vue.options/子类options）
 export function resolveAsset (
   options: Object,
   type: string,
@@ -430,6 +436,8 @@ export function resolveAsset (
   if (typeof id !== 'string') {
     return
   }
+  //找到含有所有组件/指令/过滤器的对象，并且支持id/驼峰/帕斯卡命名
+  //返回这个包含所有组件/指令/构造器对象的某个构造函数（src/core/global-api/assets.js:37），并准备生成组件（create-element.js）
   const assets = options[type]
   // check local registration variations first
   if (hasOwn(assets, id)) return assets[id]

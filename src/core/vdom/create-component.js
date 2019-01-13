@@ -73,6 +73,7 @@ const componentVNodeHooks = {
   insert (vnode: MountedComponentVNode) {
     const { context, componentInstance } = vnode
     if (!componentInstance._isMounted) {
+      //如果没有执行过mounted的钩子就执行它，并且是先子=》父
       componentInstance._isMounted = true
       callHook(componentInstance, 'mounted')
     }
@@ -139,7 +140,9 @@ export function createComponent (
   let asyncFactory
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
+    //解析异步组件
     Ctor = resolveAsyncComponent(asyncFactory, baseCtor, context)
+    //如果非高级组件，创建一个空的注释节点占位
     if (Ctor === undefined) {
       // return a placeholder node for async component, which is rendered
       // as a comment node but preserves all the raw information for the node.

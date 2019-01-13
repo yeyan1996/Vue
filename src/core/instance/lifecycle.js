@@ -102,7 +102,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
       vm._watcher.update()
     }
   }
-
+//beforeDestroy的顺序是先父=》子，destroyed顺序是先子=》父（和mounted相同）
   Vue.prototype.$destroy = function () {
     const vm: Component = this
     if (vm._isBeingDestroyed) {
@@ -131,6 +131,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // call the last hook...
     vm._isDestroyed = true
     // invoke destroy hooks on current rendered tree
+    //调用__patch__传入null参数递归销毁子组件（递归从最里面那个子组件开始销毁）
     vm.__patch__(vm._vnode, null)
     // fire destroyed hook
     callHook(vm, 'destroyed')
@@ -176,6 +177,7 @@ export function mountComponent (
       }
     }
   }
+  //执行beforeMount钩子，之后在执行mount的一系列逻辑,与mounted不同的是beforeMount是父=》子
   callHook(vm, 'beforeMount')
 
   let updateComponent
@@ -222,9 +224,10 @@ export function mountComponent (
 
   // manually mounted instance, call mounted on self
   // mounted is called for render-created child components in its inserted hook
-  // 当挂载好了以后执行mounted钩子
+  //$vnode是父vnode，这里指的是没有父vnode，即已经是一个根节点了
   if (vm.$vnode == null) {
     vm._isMounted = true
+    // 执行mounted钩子
     callHook(vm, 'mounted')
   }
   return vm
@@ -340,10 +343,12 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
 export function callHook (vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget()
+  //handler是一个数组，每个元素为当前这个生命周期需要执行的函数（父=》子）
   const handlers = vm.$options[hook]
   if (handlers) {
     for (let i = 0, j = handlers.length; i < j; i++) {
       try {
+        //this指向vue实例
         handlers[i].call(vm)
       } catch (e) {
         handleError(e, vm, `${hook} hook`)

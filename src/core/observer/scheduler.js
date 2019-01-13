@@ -35,6 +35,7 @@ function resetSchedulerState () {
 /**
  * Flush both queues and run the watchers.
  */
+//当数据发生变化的时候会执行这个函数
 function flushSchedulerQueue () {
   flushing = true
   let watcher, id
@@ -53,6 +54,7 @@ function flushSchedulerQueue () {
   // as we run existing watchers
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
+    //watch实例的options中含有before方法则执行，即执行beforeUpdate钩子（src/core/instance/lifecycle.js:217）
     if (watcher.before) {
       watcher.before()
     }

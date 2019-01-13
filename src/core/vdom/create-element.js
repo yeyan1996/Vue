@@ -113,7 +113,11 @@ export function _createElement (
       )
 
       // 否则是一个注册过的组件(非正常的html标签)
-    } else if ((!data || !data.pre) && isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
+    } else if (
+      (!data || !data.pre) &&
+      //根据Ctor判断是否为Vue（全局）或者是子组件的构造函数（局部），来决定为全局/局部的组件/指令/过滤器注册
+      isDef(Ctor = resolveAsset(context.$options, 'components', tag))
+    ) {
       // component
       vnode = createComponent(Ctor, data, context, children, tag)
     } else {

@@ -70,12 +70,14 @@ export function resolveAsyncComponent (
         contexts.length = 0
       }
     }
-
+    //once只执行一次
     const resolve = once((res: Object | Class<Component>) => {
       // cache resolved
+      //ensureCtor将res(通过import()导入的异步组件的options)解析为异步组件的构造器
       factory.resolved = ensureCtor(res, baseCtor)
       // invoke callbacks only if this is not a synchronous resolve
       // (async resolves are shimmed as synchronous during SSR)
+      //强制刷新识图创建组件（forceRender函数会再次执行resolveAsyncComponent这个函数）
       if (!sync) {
         forceRender(true)
       }
@@ -86,30 +88,33 @@ export function resolveAsyncComponent (
         `Failed to resolve async component: ${String(factory)}` +
         (reason ? `\nReason: ${reason}` : '')
       )
+      //定义了error组件就渲染error组件
       if (isDef(factory.errorComp)) {
         factory.error = true
         forceRender(true)
       }
     })
-
+    //如果使用Promise的异步组件,factory为()=>import(.......)这个函数，res为一个Promise对象（res也可能是对象即使用高级异步组件）
     const res = factory(resolve, reject)
 
     if (isObject(res)) {
       if (typeof res.then === 'function') {
         // () => Promise
+        //第一次factory.resolved是没有定义的，所以将这个异步的Promise用then方法加入回调传入resolve,reject2个函数等Promise决议后执行
         if (isUndef(factory.resolved)) {
           res.then(resolve, reject)
         }
+        //高级异步组件
       } else if (isDef(res.component) && typeof res.component.then === 'function') {
         res.component.then(resolve, reject)
 
         if (isDef(res.error)) {
-          factory.errorComp = ensureCtor(res.error, baseCtor)
+          factory.errorComp = ensureCtor(res.error, baseCtor) //返回一个显示错误的组件的构造器
         }
 
         if (isDef(res.loading)) {
-          factory.loadingComp = ensureCtor(res.loading, baseCtor)
-          if (res.delay === 0) {
+          factory.loadingComp = ensureCtor(res.loading, baseCtor) //返回一个显示loading的组件的构造器
+          if (res.delay === 0) { //delay配置项是0的话直接渲染loading组件
             factory.loading = true
           } else {
             setTimeout(() => {
@@ -121,6 +126,7 @@ export function resolveAsyncComponent (
           }
         }
 
+        //超时调用reject
         if (isDef(res.timeout)) {
           setTimeout(() => {
             if (isUndef(factory.resolved)) {
@@ -137,8 +143,9 @@ export function resolveAsyncComponent (
 
     sync = false
     // return in case resolved synchronously
+    //异步组件返回一个Undefined
     return factory.loading
-      ? factory.loadingComp
+      ? factory.loadingComp //渲染一个loading组件
       : factory.resolved
   }
 }

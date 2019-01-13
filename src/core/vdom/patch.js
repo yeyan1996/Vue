@@ -599,6 +599,8 @@ export function createPatchFunction (backend) {
       vnode.parent.data.pendingInsert = queue
     } else {
       for (let i = 0; i < queue.length; ++i) {
+        //queue每一个都是一个vnode，insert方法在（src/core/vdom/create-component.js:73）
+        //queue的顺序是先子后父，先执行子组件的mounted钩子
         queue[i].data.hook.insert(queue[i])
       }
     }
@@ -822,7 +824,7 @@ export function createPatchFunction (backend) {
         }
       }
     }
-
+  //执行组件的mounted钩子
     invokeInsertHook(vnode, insertedVnodeQueue, isInitialPatch)
     //返回一个真实dom节点
     return vnode.elm

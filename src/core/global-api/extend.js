@@ -16,7 +16,7 @@ export function initExtend (Vue: GlobalAPI) {
   /**
    * Class inheritance
    */
-  // 继承Vue构造函数的一些方法和属性
+  // 继承Vue构造函数的一些方法和属性（传入组件的options参数）返回组件的构造器
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {}
     const Super = this
@@ -40,7 +40,7 @@ export function initExtend (Vue: GlobalAPI) {
     Sub.prototype = Object.create(Super.prototype)
     Sub.prototype.constructor = Sub
     Sub.cid = cid++
-    //定义子类构造函数的options属性为这个组件对象的属性和Vue根实例的属性合并
+    //定义子类构造函数的options属性为这个组件对象的属性和Vue.options合并
     Sub.options = mergeOptions(
       Super.options,
       extendOptions
@@ -68,6 +68,7 @@ export function initExtend (Vue: GlobalAPI) {
       Sub[type] = Super[type]
     })
     // enable recursive self-lookup
+    //在构造器的options.components的name属性指向自身这个构造器
     if (name) {
       Sub.options.components[name] = Sub
     }

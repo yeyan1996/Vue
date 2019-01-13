@@ -43,6 +43,8 @@ export class Observer {
     this.value = value
     this.dep = new Dep()
     this.vmCount = 0
+    //def是Object.defineProperty的封装，第三个参数为value的值，默认为内部属性不可枚举
+    //这里给传入class的参数（一个需要被观测的数组/对象）定义一个__ob__属性，值是这个class的实例
     def(value, '__ob__', this)
     if (Array.isArray(value)) {
       if (hasProto) {
@@ -50,6 +52,7 @@ export class Observer {
       } else {
         copyAugment(value, arrayMethods, arrayKeys)
       }
+      //递归遍历数组将数组的所有元素执行observe方法（将数组内的所有数组/对象元素添加__ob__内部属性）
       this.observeArray(value)
     } else {
       this.walk(value)
@@ -61,6 +64,7 @@ export class Observer {
    * getter/setters. This method should only be called when
    * value type is Object.
    */
+  //将对象和它拥有的每个可枚举的属性（不包括__ob__）作为参数传入defineReactive方法
   walk (obj: Object) {
     const keys = Object.keys(obj)
     for (let i = 0; i < keys.length; i++) {
@@ -108,18 +112,22 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * or the existing observer if the value already has one.
  */
 export function observe (value: any, asRootData: ?boolean): Observer | void {
+  //观察的对象必须是对象，不能是一个vnode
   if (!isObject(value) || value instanceof VNode) {
+    //直接返回Undefined
     return
   }
   let ob: Observer | void
+  //如果已经被观察了就直接返回
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
-    shouldObserve &&
+    //满足下列所有条件才能生成一个Observer的实例
+    shouldObserve && //是否需要被观测，类似全局开关，通过toggleObserving（src/core/observer/index.js:27）可以改变
     !isServerRendering() &&
-    (Array.isArray(value) || isPlainObject(value)) &&
-    Object.isExtensible(value) &&
-    !value._isVue
+    (Array.isArray(value) || isPlainObject(value)) && //数组/普通对象
+    Object.isExtensible(value) && //必须是可扩展的
+    !value._isVue //不能是Vue
   ) {
     ob = new Observer(value)
   }
@@ -132,6 +140,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
 /**
  * Define a reactive property on an Object.
  */
+//定义一个响应式对象（reactive中文=>响应）
 export function defineReactive (
   obj: Object,
   key: string,
@@ -142,6 +151,7 @@ export function defineReactive (
   const dep = new Dep()
 
   const property = Object.getOwnPropertyDescriptor(obj, key)
+  //不可配置的属性直接返回
   if (property && property.configurable === false) {
     return
   }
@@ -149,10 +159,11 @@ export function defineReactive (
   // cater for pre-defined getter/setters
   const getter = property && property.get
   const setter = property && property.set
+  //如果没有原生的getter,setter且传入defineReactive的参数个数是2的话，获取这个对象的属性值
   if ((!getter || setter) && arguments.length === 2) {
     val = obj[key]
   }
-
+  //如果这个对象的属性值是对象就递归调用
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,

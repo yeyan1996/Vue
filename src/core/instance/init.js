@@ -35,11 +35,15 @@ export function initMixin (Vue: Class<Component>) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
+      //合并组件的options
+      // 组件合并时更快，因为在初始化组件的构造函数,即执行Vue.extend函数时已经定义了options属性(src/core/global-api/extend.js:44)
       initInternalComponent(vm, options)
     } else {
-      //合并传入构造函数的参数到$options
+      //如果不是一个组件，即main.js声明的根实例，则合并传入构造函数的参数到$options（合并配置）
       vm.$options = mergeOptions(
+        //返回Vue构造函数的options属性最初定义好的一些属性（src/core/global-api/index.js：47）
         resolveConstructorOptions(vm.constructor),
+        //new Vue时候传入构造函数的对象
         options || {},
         vm
       )
@@ -56,11 +60,13 @@ export function initMixin (Vue: Class<Component>) {
     initLifecycle(vm)
     initEvents(vm)
     initRender(vm)
+    //执行beforeCreate钩子（这个钩子执行的时候initState还没执行没有data等一系列属性）
     callHook(vm, 'beforeCreate')
     initInjections(vm) // resolve injections before data/props
-    //初始化vue构造函数的属性(prop,date,methods,computed,watch)
+    //初始化vue构造函数的属性(prop,data,methods,computed,watch)
     initState(vm)
     initProvide(vm) // resolve provide after data/props
+    //执行created钩子（在上面initState函数执行后，即有了data,methods......一系列数据后）
     callHook(vm, 'created')
 
     /* istanbul ignore if */
@@ -79,12 +85,14 @@ export function initMixin (Vue: Class<Component>) {
 
 //组件的初始化
 export function initInternalComponent (vm: Component, options: InternalComponentOptions) {
-  const opts = vm.$options = Object.create(vm.constructor.options)
+  //vm.constructor是子组件的构造器，它的options属性定义在src/core/global-api/extend.js:44里
+  const opts = vm.$options = Object.create(vm.constructor.options) // Sub.options
   // doing this because it's faster than dynamic enumeration.
   // 组件的options会有_parentVnode属性(占位符vnode)(src/core/vdom/create-component.js:218)
   const parentVnode = options._parentVnode
   //parent为当前vm的父组件实例
   opts.parent = options.parent
+  //parentVnode是父组件的vnode
   opts._parentVnode = parentVnode
 
   const vnodeComponentOptions = parentVnode.componentOptions
@@ -99,6 +107,7 @@ export function initInternalComponent (vm: Component, options: InternalComponent
   }
 }
 
+//Ctor为Vue
 export function resolveConstructorOptions (Ctor: Class<Component>) {
   let options = Ctor.options
   if (Ctor.super) {
