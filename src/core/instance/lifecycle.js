@@ -203,8 +203,8 @@ export function mountComponent (
     updateComponent = () => {
       //hydrating和SSR有关一般为false
       /**
-       * 一般会走到这里,_render方法将实例转化为vnode(src/core/instance/render.js:63)
-       * _update(62)方法将vnode挂载到dom节点,核心逻辑
+       * 一般会走到这里,_render方法将实例转化为vnode(src/core/instance/render.js:64)
+       * 定义了_update(62)方法将vnode挂载到dom节点,核心逻辑
        * **/
       vm._update(vm._render(), hydrating)
     }
@@ -213,6 +213,8 @@ export function mountComponent (
   // we set this to vm._watcher inside the watcher's constructor
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
+  //实例化一个渲染watcher
+  /**执行这里会执行上面定义的updateComponent生成dom节点**/
   new Watcher(vm, updateComponent, noop, {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {

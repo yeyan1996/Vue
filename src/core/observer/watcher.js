@@ -23,6 +23,7 @@ let uid = 0
  * and fires callback when the expression value changes.
  * This is used for both the $watch() api and directives.
  */
+//执行初始化vue实例的时候会实例化一个渲染watcher(src/core/instance/lifecycle.js:217)
 export default class Watcher {
   vm: Component;
   expression: string;
@@ -77,7 +78,7 @@ export default class Watcher {
       : ''
     // parse expression for getter
     if (typeof expOrFn === 'function') {
-      // 将watcher的getter属性等于这个函数
+      // 将渲染watcher的getter属性等于这个函数,这里指的是updateComponent函数
       this.getter = expOrFn
     } else {
       this.getter = parsePath(expOrFn)
@@ -93,17 +94,20 @@ export default class Watcher {
     }
     this.value = this.lazy
       ? undefined
-      : this.get()
+      : this.get() //渲染watcher执行get方法,它会执行updateComponent渲染出节点
   }
 
   /**
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
+    //将当前的watcher实例作为Dep.target的值
     pushTarget(this)
     let value
     const vm = this.vm
     try {
+      //执行updateComponent函数
+      //在执行updateComponent函数时,会执行render方法(src/core/instance/render.js:83),这个时候会触发被劫持后定义的getter函数
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -117,6 +121,7 @@ export default class Watcher {
       if (this.deep) {
         traverse(value)
       }
+      //弹出栈顶的那个watcher实例,将Dep.target等于栈顶的第二个元素
       popTarget()
       this.cleanupDeps()
     }
@@ -126,12 +131,15 @@ export default class Watcher {
   /**
    * Add a dependency to this directive.
    */
+  //给watcher实例的deps属性添加一个dep,给dep添加一个watcher
   addDep (dep: Dep) {
     const id = dep.id
     if (!this.newDepIds.has(id)) {
+      //给newDepIds和newDeps属性添加dep的id和自身
       this.newDepIds.add(id)
       this.newDeps.push(dep)
       if (!this.depIds.has(id)) {
+        //如果即不存在于newDep也不存在于dep就执行addSub,将这个watcher实例添加到subs数组中
         dep.addSub(this)
       }
     }
@@ -142,16 +150,20 @@ export default class Watcher {
    */
   cleanupDeps () {
     let i = this.deps.length
+    //第一次i=0不会循环
+    //判断每次依赖收集的时候移除残留在旧deps却不在新deps的watcher并且删除(不会收集一个v-if为false的模板中的值,修改不会触发dep的notify方法,提升性能)
     while (i--) {
       const dep = this.deps[i]
       if (!this.newDepIds.has(dep.id)) {
         dep.removeSub(this)
       }
     }
+    //交换depIds和newDepIds这2个数组
     let tmp = this.depIds
     this.depIds = this.newDepIds
     this.newDepIds = tmp
     this.newDepIds.clear()
+    //再次交换回来
     tmp = this.deps
     this.deps = this.newDeps
     this.newDeps = tmp

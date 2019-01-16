@@ -163,16 +163,21 @@ export function defineReactive (
   if ((!getter || setter) && arguments.length === 2) {
     val = obj[key]
   }
-  //如果这个对象的属性值是对象就递归调用
+  //给data/props中的每个属性定义了getter/setter(此时未调用)
+  //如果这个对象的属性值是对象就递归调用,到达底部的时候childOb为undefined,随后到从子再到父级会返回一个内部的ob对象
+  //即childOb存在时,当前键的值是一个对象/数组
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,
+    //真正调用get的时候是执行用户定义/模板编译的render函数(依赖收集)
     get: function reactiveGetter () {
+      //val可以是对象也可以是基本数据类型
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
+        //实质调用watcher的addDep方法,给watcher实例的deps属性添加一个dep
         dep.depend()
-        if (childOb) {
+        if (childOb) { //非 递归的最底层的逻辑
           childOb.dep.depend()
           if (Array.isArray(value)) {
             dependArray(value)
