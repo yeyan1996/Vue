@@ -191,9 +191,12 @@ function initComputed (vm: Component, computed: Object) {
         vm
       )
     }
-
+    //true
     if (!isSSR) {
       // create internal watcher for the computed property.
+      //给每个computed的属性创建一个watcher实例保存在watchers对象中
+      //watchers和_computedWatcher因为是同一个内存地址所以也会映射到_computedWatcher中
+      //返回一个computed watcher
       watchers[key] = new Watcher(
         vm,
         getter || noop,
@@ -206,6 +209,7 @@ function initComputed (vm: Component, computed: Object) {
     // component prototype. We only need to define computed properties defined
     // at instantiation here.
     if (!(key in vm)) {
+      //定义computed对象key属性的getter函数
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
       if (key in vm.$data) {
@@ -222,8 +226,10 @@ export function defineComputed (
   key: string,
   userDef: Object | Function
 ) {
+  //true
   const shouldCache = !isServerRendering()
   if (typeof userDef === 'function') {
+    //给computed的属性设置getter函数
     sharedPropertyDefinition.get = shouldCache
       ? createComputedGetter(key)
       : createGetterInvoker(userDef)
@@ -249,15 +255,20 @@ export function defineComputed (
 }
 
 function createComputedGetter (key) {
+  //返回当前computed属性的getter函数
   return function computedGetter () {
+    //当尝试访问computed属性会触发getter执行下面的逻辑
+    //这里获取了当前属性的watcher实例
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
+      //如果依赖没有变化dirty为false不会求值
       if (watcher.dirty) {
         watcher.evaluate()
       }
       if (Dep.target) {
         watcher.depend()
       }
+      //返回watcher实例的value属性
       return watcher.value
     }
   }

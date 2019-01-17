@@ -62,7 +62,9 @@ function flushSchedulerQueue () {
     has[id] = null
     watcher.run()
     // in dev build, check and stop circular updates.
+
     if (process.env.NODE_ENV !== 'production' && has[id] != null) {
+      //如果队列中有之前相同的watcher会给circular对象的这个id加一
       circular[id] = (circular[id] || 0) + 1
       if (circular[id] > MAX_UPDATE_COUNT) {
         warn(
@@ -129,6 +131,7 @@ function callActivatedHooks (queue) {
  * Jobs with duplicate IDs will be skipped unless it's
  * pushed when the queue is being flushed.
  */
+//渲染watcher/用户定义的watcher
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
   if (has[id] == null) {
@@ -148,10 +151,12 @@ export function queueWatcher (watcher: Watcher) {
     if (!waiting) {
       waiting = true
 
+      //vue暴露了一个是否异步更新队列的配合项,一般都会true,即下面这个循环不会走到
       if (process.env.NODE_ENV !== 'production' && !config.async) {
         flushSchedulerQueue()
         return
       }
+      //异步更新队列
       nextTick(flushSchedulerQueue)
     }
   }

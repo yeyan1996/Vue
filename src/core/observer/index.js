@@ -50,6 +50,7 @@ export class Observer {
       if (hasProto) {
         protoAugment(value, arrayMethods)
       } else {
+        //拷贝一个数组的原型(一般用不到)
         copyAugment(value, arrayMethods, arrayKeys)
       }
       //递归遍历数组将数组的所有元素执行observe方法（将数组内的所有数组/对象元素添加__ob__内部属性）
@@ -166,6 +167,7 @@ export function defineReactive (
   //给data/props中的每个属性定义了getter/setter(此时未调用)
   //如果这个对象的属性值是对象就递归调用,到达底部的时候childOb为undefined,随后到从子再到父级会返回一个内部的ob对象
   //即childOb存在时,当前键的值是一个对象/数组
+  //observe观察(val)的必须是一个对象/数组
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,
@@ -175,9 +177,10 @@ export function defineReactive (
       //val可以是对象也可以是基本数据类型
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
-        //实质调用watcher的addDep方法,给watcher实例的deps属性添加一个dep
+        //实质调用watcher的addDep方法,给watcher实例的deps属性添加一个dep,同时给这个dep添加一个watcher
         dep.depend()
-        if (childOb) { //非 递归的最底层的逻辑
+        if (childOb) { //非 递归的最底层的逻辑(用于Vue.set?)
+          //给作为对象的子属性值的内部属性__ob__进行收集依赖
           childOb.dep.depend()
           if (Array.isArray(value)) {
             dependArray(value)
@@ -214,22 +217,26 @@ export function defineReactive (
  * triggers change notification if the property doesn't
  * already exist.
  */
+//定义Vue.set方法
 export function set (target: Array<any> | Object, key: any, val: any): any {
   if (process.env.NODE_ENV !== 'production' &&
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(`Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+  //是否为合法Array
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.length = Math.max(target.length, key)
     target.splice(key, 1, val)
     return val
   }
+  //是否已经存在这个key
   if (key in target && !(key in Object.prototype)) {
     target[key] = val
     return val
   }
   const ob = (target: any).__ob__
+  //避免是Vue和一个根的data属性
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid adding reactive properties to a Vue instance or its root $data ' +
@@ -241,7 +248,9 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     target[key] = val
     return val
   }
+  //将对象新增的key变成一个响应式对象
   defineReactive(ob.value, key, val)
+  //这里能拿到ob对象因为在(82)定义了childOb并且收集了依赖
   ob.dep.notify()
   return val
 }

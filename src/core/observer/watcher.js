@@ -42,7 +42,7 @@ export default class Watcher {
   before: ?Function;
   getter: Function;
   value: any;
-
+//如果是computed属性生成的watcher实例第二个参数是computed属性的值(函数),且options.lazy为true
   constructor (
     vm: Component,
     expOrFn: string | Function,
@@ -59,7 +59,7 @@ export default class Watcher {
     if (options) {
       this.deep = !!options.deep
       this.user = !!options.user
-      this.lazy = !!options.lazy
+      this.lazy = !!options.lazy //如果是computed watcher的话lazy为true
       this.sync = !!options.sync
       this.before = options.before
     } else {
@@ -93,8 +93,10 @@ export default class Watcher {
       }
     }
     this.value = this.lazy
-      ? undefined
-      : this.get() //渲染watcher执行get方法,它会执行updateComponent渲染出节点
+      ? undefined //computed属性的value为undefined
+      //渲染watcher执行get方法,它会执行updateComponent渲染出节点
+      //如果是非渲染watcher让value等于get方法返回的值
+      : this.get()
   }
 
   /**
@@ -131,7 +133,7 @@ export default class Watcher {
   /**
    * Add a dependency to this directive.
    */
-  //给watcher实例的deps属性添加一个dep,给dep添加一个watcher
+  //给watcher实例的deps属性添加一个dep,给dep的subs属性添加一个watcher
   addDep (dep: Dep) {
     const id = dep.id
     if (!this.newDepIds.has(id)) {
@@ -139,7 +141,7 @@ export default class Watcher {
       this.newDepIds.add(id)
       this.newDeps.push(dep)
       if (!this.depIds.has(id)) {
-        //如果即不存在于newDep也不存在于dep就执行addSub,将这个watcher实例添加到subs数组中
+        //如果即不存在于newDep也不存在于dep就执行addSub,将这个watcher实例添加到传入的dep参数的subs属性(数组)中
         dep.addSub(this)
       }
     }
@@ -174,6 +176,7 @@ export default class Watcher {
    * Subscriber interface.
    * Will be called when a dependency changes.
    */
+  //当computed的依赖发生变化的时候会执行update方法
   update () {
     /* istanbul ignore else */
     if (this.lazy) {
@@ -192,6 +195,7 @@ export default class Watcher {
   run () {
     if (this.active) {
       const value = this.get()
+        //如果新值和旧值是一样的则什么都不会发生(computed/watch)
       if (
         value !== this.value ||
         // Deep watchers and watchers on Object/Arrays should fire even
@@ -220,8 +224,10 @@ export default class Watcher {
    * Evaluate the value of the watcher.
    * This only gets called for lazy watchers.
    */
+  //触发计算属性的getter后会执行evaluate方法,即执行computed属性的值(函数)
   evaluate () {
-    this.value = this.get()
+    this.value = this.get() //返回一个值
+    //求值后将dirty改为false
     this.dirty = false
   }
 
@@ -231,6 +237,7 @@ export default class Watcher {
   depend () {
     let i = this.deps.length
     while (i--) {
+      //获取computed属性触发getter函数的时候会执行这个逻辑,这里会存在一个渲染watcher,相当于渲染watcher订阅了这个computed属性的变化
       this.deps[i].depend()
     }
   }

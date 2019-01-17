@@ -32,6 +32,7 @@ export default class Dep {
 
   depend () {
     if (Dep.target) {
+      //Dep.target值全局唯一的watcher
       Dep.target.addDep(this)
     }
   }
@@ -46,6 +47,7 @@ export default class Dep {
       subs.sort((a, b) => a.id - b.id)
     }
     for (let i = 0, l = subs.length; i < l; i++) {
+      //给每个watcher实例执行update方法
       subs[i].update()
     }
   }

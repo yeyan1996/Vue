@@ -13,6 +13,14 @@ function flushCallbacks () {
   const copies = callbacks.slice(0)
   callbacks.length = 0
   for (let i = 0; i < copies.length; i++) {
+    //先添加的回调函数先执行
+    //@example
+    //data(){return { msg:'hello world' }}
+    //this.$nextTick(()=>{console.log(this.$refs.msg.innerHTML)})
+    //this.msg = 'hello vue'
+    //console.log(this.$refs.msg.innerHTML)
+    //最后输出的是2个hello world,因为第一个nextTick将回调push到callbacks,修改msg会将渲染视图的回调(flushSchedulerQueue)push到callbacks
+    //但是由于是按顺序遍历数组,nextTick的回调会先执行,所以仍然输出的是'hello world'
     copies[i]()
   }
 }
@@ -34,10 +42,12 @@ let useMacroTask = false
 // in IE. The only polyfill that consistently queues the callback after all DOM
 // events triggered in the same loop is by using MessageChannel.
 /* istanbul ignore if */
+//判断浏览器是否原生支持setImmediate
 if (typeof setImmediate !== 'undefined' && isNative(setImmediate)) {
   macroTimerFunc = () => {
     setImmediate(flushCallbacks)
   }
+  //没有则判断是否原生支持MessageChannel
 } else if (typeof MessageChannel !== 'undefined' && (
   isNative(MessageChannel) ||
   // PhantomJS
@@ -51,16 +61,20 @@ if (typeof setImmediate !== 'undefined' && isNative(setImmediate)) {
   }
 } else {
   /* istanbul ignore next */
+  //否则macroTimerFunc降级为setTimeout 0
   macroTimerFunc = () => {
+    //在下个宏任务中执行flushCallbacks
     setTimeout(flushCallbacks, 0)
   }
 }
 
 // Determine microtask defer implementation.
 /* istanbul ignore next, $flow-disable-line */
+//判断是否原生支持Promise
 if (typeof Promise !== 'undefined' && isNative(Promise)) {
   const p = Promise.resolve()
   microTimerFunc = () => {
+    //在微任务中执行flushCallbacks
     p.then(flushCallbacks)
     // in problematic UIWebViews, Promise.then doesn't completely break, but
     // it can get stuck in a weird state where callbacks are pushed into the
@@ -70,6 +84,7 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
     if (isIOS) setTimeout(noop)
   }
 } else {
+  //将microTimer降级为macroTimerFunc
   // fallback to macro
   microTimerFunc = macroTimerFunc
 }
@@ -84,13 +99,14 @@ export function withMacroTask (fn: Function): Function {
     try {
       return fn.apply(null, arguments)
     } finally {
-      useMacroTask = false    
+      useMacroTask = false
     }
   })
 }
 
 export function nextTick (cb?: Function, ctx?: Object) {
   let _resolve
+  //给回调数组添加一个回调函数
   callbacks.push(() => {
     if (cb) {
       try {
@@ -98,18 +114,22 @@ export function nextTick (cb?: Function, ctx?: Object) {
       } catch (e) {
         handleError(e, ctx, 'nextTick')
       }
+      //如果回调不是一个函数(即this.$nextTick()的情况)将this.$nextTick这个Promise的状态变为resolve,有上下文也会传入作为this.$nextTick决议后的值
     } else if (_resolve) {
       _resolve(ctx)
     }
   })
   if (!pending) {
     pending = true
+    //默认为false使用微任务(即异步执行回调队列中的回调函数)
+    //如果有_resolve则会在同步任务执行完后决议Promise(也就是this.$nextTick)
     if (useMacroTask) {
       macroTimerFunc()
     } else {
       microTimerFunc()
     }
   }
+  //cb不存在且支持原生Promise就让this.$nextTick返回一个Promise
   // $flow-disable-line
   if (!cb && typeof Promise !== 'undefined') {
     return new Promise(resolve => {

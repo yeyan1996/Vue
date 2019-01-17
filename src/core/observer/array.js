@@ -21,12 +21,14 @@ const methodsToPatch = [
 /**
  * Intercept mutating methods and emit events
  */
+//修改了数组的原型方法,使得他能够更新视图
 methodsToPatch.forEach(function (method) {
   // cache original method
   const original = arrayProto[method]
-  def(arrayMethods, method, function mutator (...args) {
+  def(arrayMethods, method, /*value的值,这里指修改后的原型方法*/function mutator (/*数组*/...args) {
     const result = original.apply(this, args)
     const ob = this.__ob__
+    //定义unshift/splice新增的元素
     let inserted
     switch (method) {
       case 'push':
@@ -37,8 +39,10 @@ methodsToPatch.forEach(function (method) {
         inserted = args.slice(2)
         break
     }
+    //将新增的元素变成响应式
     if (inserted) ob.observeArray(inserted)
     // notify change
+    //手动更新视图
     ob.dep.notify()
     return result
   })
