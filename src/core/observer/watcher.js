@@ -103,13 +103,13 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
-    //将当前的watcher实例作为Dep.target的值
+    //给Dep.target赋值为watcher实例
     pushTarget(this)
     let value
     const vm = this.vm
     try {
       //执行updateComponent函数
-      //在执行updateComponent函数时,会执行render方法(src/core/instance/render.js:83),这个时候会触发被劫持后定义的getter函数
+      //在执行updateComponent函数时,会执行render方法(src/core/instance/render.js:83),这个时候会触发被劫持后定义的getter函数进行依赖收集
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -123,6 +123,7 @@ export default class Watcher {
       if (this.deep) {
         traverse(value)
       }
+      //此时依赖已经收集完毕了
       //弹出栈顶的那个watcher实例,将Dep.target等于栈顶的第二个元素
       popTarget()
       this.cleanupDeps()
@@ -184,6 +185,7 @@ export default class Watcher {
     } else if (this.sync) {
       this.run()
     } else {
+      //一般会走到这里，传入当前watcher实例
       queueWatcher(this)
     }
   }
@@ -194,6 +196,8 @@ export default class Watcher {
    */
   run () {
     if (this.active) {
+      //对于渲染watcher它的value为undefined
+      //这里由于run函数是由数据setter函数触发的，所以当数据改变后会重新渲染视图（执行get方法等于执行updateComponent）
       const value = this.get()
         //如果新值和旧值是一样的则什么都不会发生(computed/watch)
       if (
@@ -207,6 +211,7 @@ export default class Watcher {
         // set new value
         const oldValue = this.value
         this.value = value
+        //如果是用户定义的watcher(平时开发中的watch(now,old){.......})
         if (this.user) {
           try {
             this.cb.call(this.vm, value, oldValue)

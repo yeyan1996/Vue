@@ -34,6 +34,7 @@ export function toggleObserving (value: boolean) {
  * object's property keys into getter/setters that
  * collect dependencies and dispatch updates.
  */
+//value满足（127）的定义才会实例化一个observer
 export class Observer {
   value: any;
   dep: Dep;
@@ -44,7 +45,7 @@ export class Observer {
     this.dep = new Dep()
     this.vmCount = 0
     //def是Object.defineProperty的封装，第三个参数为value的值，默认为内部属性不可枚举
-    //这里给传入class的参数（一个需要被观测的数组/对象）定义一个__ob__属性，值是这个class的实例
+    //这里给传入class的参数（一个需要被观测的数组/对象）定义一个__ob__属性，值是这个Observer的实例
     def(value, '__ob__', this)
     if (Array.isArray(value)) {
       if (hasProto) {
@@ -56,6 +57,7 @@ export class Observer {
       //递归遍历数组将数组的所有元素执行observe方法（将数组内的所有数组/对象元素添加__ob__内部属性）
       this.observeArray(value)
     } else {
+      //value为一个对象
       this.walk(value)
     }
   }
@@ -69,6 +71,7 @@ export class Observer {
   walk (obj: Object) {
     const keys = Object.keys(obj)
     for (let i = 0; i < keys.length; i++) {
+      //将对象自身和它的属性传入defineReactive执行数据劫持
       defineReactive(obj, keys[i])
     }
   }
@@ -149,6 +152,7 @@ export function defineReactive (
   customSetter?: ?Function,
   shallow?: boolean
 ) {
+  /**在定义的时候就给这个对象的所有键一个dep的实例**/
   const dep = new Dep()
 
   const property = Object.getOwnPropertyDescriptor(obj, key)
@@ -207,6 +211,7 @@ export function defineReactive (
         val = newVal
       }
       childOb = !shallow && observe(newVal)
+      //派发更新
       dep.notify()
     }
   })

@@ -52,6 +52,7 @@ function flushSchedulerQueue () {
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
+  //每次循环都会判断queue的长度，这个队列长度可能会发生变化
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
     //watch实例的options中含有before方法则执行，即执行beforeUpdate钩子（src/core/instance/lifecycle.js:217）
@@ -81,12 +82,13 @@ function flushSchedulerQueue () {
   }
 
   // keep copies of post queues before resetting state
+  //keep-alive
   const activatedQueue = activatedChildren.slice()
   const updatedQueue = queue.slice()
-
+ //重置一些has,queue的长度
   resetSchedulerState()
 
-  // call component updated and activated hooks
+  // call component updated and activated hooks(2个生命周期钩子)
   callActivatedHooks(activatedQueue)
   callUpdatedHooks(updatedQueue)
 
@@ -134,15 +136,19 @@ function callActivatedHooks (queue) {
 //渲染watcher/用户定义的watcher
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
+  //一开始has是一个空对象，这里是为了保证同一个watcher实例只触发一次
   if (has[id] == null) {
     has[id] = true
     if (!flushing) {
+      //往队列里放入一个watcher实例
       queue.push(watcher)
     } else {
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
       let i = queue.length - 1
+      //如果i大于index或者队列最后一位的id小于当前watcher实例的id就会插入这个watcher
       while (i > index && queue[i].id > watcher.id) {
+        //否则就一直减i，当i小于-1就插补到队列中了
         i--
       }
       queue.splice(i + 1, 0, watcher)
