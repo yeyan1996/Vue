@@ -164,7 +164,7 @@ export function defineReactive (
   // cater for pre-defined getter/setters
   const getter = property && property.get
   const setter = property && property.set
-  //如果没有原生的getter,setter且传入defineReactive的参数个数是2的话，获取这个对象的属性值
+  //如果没有原生的getter,setter，获取这个对象属性的值
   if ((!getter || setter) && arguments.length === 2) {
     val = obj[key]
   }
@@ -181,7 +181,7 @@ export function defineReactive (
       //val可以是对象也可以是基本数据类型
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
-        //实质调用watcher的addDep方法,给watcher实例的deps属性添加一个dep,同时给这个dep添加一个watcher
+        //给这个dep实例的subs属性添加Dep.target这个watcher，同时给当前栈顶的Dep.target（watcher）的deps添加这个dep实例
         dep.depend()
         if (childOb) { //非 递归的最底层的逻辑(用于Vue.set?)
           //给作为对象的子属性值的内部属性__ob__进行收集依赖

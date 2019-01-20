@@ -11,6 +11,7 @@ const seenObjects = new Set()
  * getters, so that every nested property inside the object
  * is collected as a "deep" dependency.
  */
+//被观测的属性值（一般为一个对象需要用到deep属性），做深度遍历，访问所有子属性进行依赖收集=>将所有属性中的dep实例的subs数组添加user watcher
 export function traverse (val: any) {
   _traverse(val, seenObjects)
   seenObjects.clear()
@@ -35,6 +36,7 @@ function _traverse (val: any, seen: SimpleSet) {
   } else {
     keys = Object.keys(val)
     i = keys.length
+    //val[keys[i]]会触发这个key的getter从而收集user watcher这个依赖，递归调用会把这个对象所有的值为对象的属性的dep的subs中添加当前的user watcher
     while (i--) _traverse(val[keys[i]], seen)
   }
 }

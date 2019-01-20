@@ -65,9 +65,10 @@ export default class Watcher {
     } else {
       this.deep = this.user = this.lazy = this.sync = false
     }
-    this.cb = cb
+    this.cb = cb //如果是user watcher它的cb为handler函数
     this.id = ++uid // uid for batching
     this.active = true
+    //dirty属性和lazy保持同步
     this.dirty = this.lazy // for lazy watchers
     this.deps = []
     this.newDeps = []
@@ -79,8 +80,10 @@ export default class Watcher {
     // parse expression for getter
     if (typeof expOrFn === 'function') {
       // 将渲染watcher的getter属性等于这个函数,这里指的是updateComponent函数
+      //亦或是一个computed的watcher
       this.getter = expOrFn
     } else {
+      //user watcher会走这个逻辑，watch一个字符串的变化，返回一个函数赋值给this.getter
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
         this.getter = noop
@@ -93,23 +96,27 @@ export default class Watcher {
       }
     }
     this.value = this.lazy
-      ? undefined //computed属性的value为undefined
+      ? undefined //computed属性的value为undefined，即第一次的值永远是undefined不会求值
       //渲染watcher执行get方法,它会执行updateComponent渲染出节点
       //如果是非渲染watcher让value等于get方法返回的值
+      //user watcher也会执行get方法
       : this.get()
   }
 
   /**
    * Evaluate the getter, and re-collect dependencies.
    */
+  //调用watcher.evaluate或者watcher.run会进行求值
   get () {
-    //给Dep.target赋值为watcher实例
+    //给Dep.target赋值为当前的watcher实例，Dep.target始终为栈顶的watcher
     pushTarget(this)
     let value
     const vm = this.vm
     try {
-      //执行updateComponent函数
+      //如果是渲染watcher会执行updateComponent函数
       //在执行updateComponent函数时,会执行render方法(src/core/instance/render.js:83),这个时候会触发被劫持后定义的getter函数进行依赖收集
+      // 如果是computed watcher会执行它的getter返回一个值作为value
+      // 如果是user watcher会执行parsePath返回的函数（src/core/util/lang.js:34），会先对当前观测的属性求一次值赋值给value（期间会触发依赖收集，将当前key中的dep实例的subs数组添加Dep.target也就是user watcher）
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -121,6 +128,7 @@ export default class Watcher {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
       if (this.deep) {
+        //如果user watcher配置了deep属性
         traverse(value)
       }
       //此时依赖已经收集完毕了
@@ -180,12 +188,14 @@ export default class Watcher {
   //当computed的依赖发生变化的时候会执行update方法
   update () {
     /* istanbul ignore else */
+    //如果是computed的watcher
     if (this.lazy) {
       this.dirty = true
+      //如果user watcher设置了sync属性会在nextTick前就执行回调
     } else if (this.sync) {
       this.run()
     } else {
-      //一般会走到这里，传入当前watcher实例
+      //渲染watcher一般会走到这里，传入当前watcher实例，会在vue自定义的nextTick后异步更新队列
       queueWatcher(this)
     }
   }
@@ -211,7 +221,7 @@ export default class Watcher {
         // set new value
         const oldValue = this.value
         this.value = value
-        //如果是用户定义的watcher(平时开发中的watch(now,old){.......})
+        //如果是user watcher会执行cb(handler)
         if (this.user) {
           try {
             this.cb.call(this.vm, value, oldValue)
@@ -231,7 +241,8 @@ export default class Watcher {
    */
   //触发计算属性的getter后会执行evaluate方法,即执行computed属性的值(函数)
   evaluate () {
-    this.value = this.get() //返回一个值
+    //this.get会把Dep.target的值变为当前的watcher（如果是计算属性调用的就是computed watcher）
+    this.value = this.get() //返回执行get后的值
     //求值后将dirty改为false
     this.dirty = false
   }

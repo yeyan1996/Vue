@@ -201,13 +201,14 @@ function initComputed (vm: Component, computed: Object) {
         vm,
         getter || noop,
         noop,
-        computedWatcherOptions
+        computedWatcherOptions //{lazy:true}
       )
     }
 
     // component-defined computed properties are already defined on the
     // component prototype. We only need to define computed properties defined
     // at instantiation here.
+    //这里为false因为computed的属性这个时候已经在vm实例的原型上定义了（src/core/global-api/extend.js:57）
     if (!(key in vm)) {
       //定义computed对象key属性的getter函数
       defineComputed(vm, key, userDef)
@@ -261,14 +262,16 @@ function createComputedGetter (key) {
     //这里获取了当前属性的watcher实例
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
-      //如果依赖没有变化dirty为false不会求值
+      //dirty=lazy这里为true
       if (watcher.dirty) {
+        //执行计算，执行后watcher实例的value属性的值为计算后的新值
         watcher.evaluate()
       }
+      //这个时候Dep.target为computed watcher，给watcher的deps属性的每个dep的subs属性添加Dep.target这个watcher
       if (Dep.target) {
         watcher.depend()
       }
-      //返回watcher实例的value属性
+      //返回执行watcher.get()后watcher实例的value属性
       return watcher.value
     }
   }
@@ -321,6 +324,7 @@ function initWatch (vm: Component, watch: Object) {
   }
 }
 
+//规范化watch属性的handler方法
 function createWatcher (
   vm: Component,
   expOrFn: string | Function,
@@ -334,6 +338,7 @@ function createWatcher (
   if (typeof handler === 'string') {
     handler = vm[handler]
   }
+  //调用$watch（371）传入监听的属性，handler和配置项
   return vm.$watch(expOrFn, handler, options)
 }
 
@@ -364,16 +369,20 @@ export function stateMixin (Vue: Class<Component>) {
   Vue.prototype.$delete = del
 
   Vue.prototype.$watch = function (
-    expOrFn: string | Function,
-    cb: any,
+    expOrFn: string | Function, //一般是监听的属性（字符串）
+    cb: any, //handler
     options?: Object
   ): Function {
     const vm: Component = this
+    //再次规范化直到handler是个函数
     if (isPlainObject(cb)) {
       return createWatcher(vm, expOrFn, cb, options)
     }
+
     options = options || {}
+    //表示是一个user watcher
     options.user = true
+    /**创建了一个watcher实例**/
     const watcher = new Watcher(vm, expOrFn, cb, options)
     if (options.immediate) {
       try {
@@ -383,6 +392,7 @@ export function stateMixin (Vue: Class<Component>) {
       }
     }
     return function unwatchFn () {
+      //销毁watcher
       watcher.teardown()
     }
   }

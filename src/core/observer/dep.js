@@ -29,14 +29,15 @@ export default class Dep {
   removeSub (sub: Watcher) {
     remove(this.subs, sub)
   }
-
+  //给这个dep实例的subs属性添加Dep.target这个watcher，同时给watcher的deps添加这个dep实例
+  //可以理解为给当前dep实例收集了一个栈顶的watcher，即Dep.target
   depend () {
     if (Dep.target) {
-      //Dep.target值全局唯一的watcher
+      //Dep.target是一个watcher
       Dep.target.addDep(this)
     }
   }
-
+//遍历当前dep实例的subs属性执行update方法
   notify () {
     // stabilize the subscriber list first
     const subs = this.subs.slice()
