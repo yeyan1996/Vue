@@ -57,11 +57,12 @@ export function initLifecycle (vm: Component) {
   vm._isBeingDestroyed = false
 }
 
-//定义核心逻辑(200行)的_update函数
+//定义核心逻辑(200)的_update函数
 export function lifecycleMixin (Vue: Class<Component>) {
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el
+    //update时prevVnode有值,因为上一次渲染的时候(把vnode赋值给vm._vnode)
     const prevVnode = vm._vnode
     //将vm实例赋值给activeInstance,返回一个将activeInstance从vm实例变成原始值的函数
     const restoreActiveInstance = setActiveInstance(vm)

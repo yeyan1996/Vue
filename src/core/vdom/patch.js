@@ -33,12 +33,13 @@ export const emptyNode = new VNode('', {}, [])
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
 function sameVnode (a, b) {
+  //满足一下条件会被认为是相同的节点
   return (
-    a.key === b.key && (
+    a.key === b.key/*key值相同*/ && (
       (
-        a.tag === b.tag &&
-        a.isComment === b.isComment &&
-        isDef(a.data) === isDef(b.data) &&
+        a.tag === b.tag && //且tag相同
+        a.isComment === b.isComment && //且都是/不是注释节点
+        isDef(a.data) === isDef(b.data) && //data属性都定义了
         sameInputType(a, b)
       ) || (
         isTrue(a.isAsyncPlaceholder) &&
@@ -312,7 +313,7 @@ export function createPatchFunction (backend) {
       nodeOps.appendChild(vnode.elm, nodeOps.createTextNode(String(vnode.text)))
     }
   }
-
+//找到一个挂载的节点
   function isPatchable (vnode) {
     while (vnode.componentInstance) {
       vnode = vnode.componentInstance._vnode
@@ -560,31 +561,37 @@ export function createPatchFunction (backend) {
 
     let i
     const data = vnode.data
+    //组件vnode会满足这个条件
     if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
+      //执行prepatch方法(src/core/vdom/create-component.js:61)
       i(oldVnode, vnode)
     }
-
+  //不是一个组件(组件没有children)
     const oldCh = oldVnode.children
     const ch = vnode.children
     if (isDef(data) && isPatchable(vnode)) {
       for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode)
       if (isDef(i = data.hook) && isDef(i = i.update)) i(oldVnode, vnode)
     }
+    //如果不是一个文本节点
     if (isUndef(vnode.text)) {
+      //新旧vnode都有children
       if (isDef(oldCh) && isDef(ch)) {
         if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
-      } else if (isDef(ch)) {
+      } else if (isDef(ch)) { //新的有老的没有就插入新的vnode
         if (process.env.NODE_ENV !== 'production') {
           checkDuplicateKeys(ch)
         }
         if (isDef(oldVnode.text)) nodeOps.setTextContent(elm, '')
+        //插入vnode
         addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue)
-      } else if (isDef(oldCh)) {
+      } else if (isDef(oldCh)) { //新的没有老的有就删除老的vnode
         removeVnodes(elm, oldCh, 0, oldCh.length - 1)
-      } else if (isDef(oldVnode.text)) {
+      } else if (isDef(oldVnode.text)) { //老的有文本节点新的没有就删除老的文本节点
         nodeOps.setTextContent(elm, '')
       }
     } else if (oldVnode.text !== vnode.text) {
+      //更新文本节点
       nodeOps.setTextContent(elm, vnode.text)
     }
     if (isDef(data)) {
@@ -735,6 +742,7 @@ export function createPatchFunction (backend) {
       createElm(vnode, insertedVnodeQueue)
     } else {
       const isRealElement = isDef(oldVnode.nodeType)
+      //不是一个真实的dom节点且vnode相同
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
         // patch existing root node
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
@@ -776,17 +784,19 @@ export function createPatchFunction (backend) {
         // create new node
         //根据新的虚拟dom创建真实的dom节点
         createElm(
-          vnode,
+          vnode, //新的节点的vnode
           insertedVnodeQueue,
           // extremely rare edge case: do not insert if old element is in a
           // leaving transition. Only happens when combining transition +
           // keep-alive + HOCs. (#4590)
-          oldElm._leaveCb ? null : parentElm,
+          oldElm._leaveCb ? null : parentElm, //旧节点的父节点,需要知道新的节点挂载到哪个地方
           nodeOps.nextSibling(oldElm)
         )
 
         // update parent placeholder node element, recursively
+        //更新父的占位符节点
         if (isDef(vnode.parent)) {
+          //占位符vnode
           let ancestor = vnode.parent
           const patchable = isPatchable(vnode)
           while (ancestor) {
