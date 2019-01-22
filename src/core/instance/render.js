@@ -78,9 +78,9 @@ export function renderMixin (Vue: Class<Component>) {
     let vnode
     try {
       //执行render函数(用户自己定义/模板编译出来的render函数),上下文为vm实例,然后传入createElement(36)函数作为参数
-      // 生产环境下vm._renderProxy等于vm,开发环境会经过一层自定义错误的代理(src/core/instance/proxy.js)
+      //vm.$createElement会做一层处理，执行createElement会多传入了一个vm实例作为第一个参数
+      // 生产环境下vm._renderProxy等于vm,开发环境会经过一层自定义错误的代理(src/core/instance/proxy.js:80)
       /**将组件实例转为vnode **/
-      //这个方法会触发
       vnode = render.call(vm._renderProxy, vm.$createElement)
     } catch (e) {
       handleError(e, vm, `render`)
@@ -100,7 +100,7 @@ export function renderMixin (Vue: Class<Component>) {
     }
     // return empty vnode in case the render function errored out
     if (!(vnode instanceof VNode)) {
-      //存在多个根节点,即一般开发中template节点下面有多个节点
+      //存在多个根节点,即在template节点下面有定义了多个节点
       if (process.env.NODE_ENV !== 'production' && Array.isArray(vnode)) {
         warn(
           'Multiple root nodes returned from render function. Render function ' +

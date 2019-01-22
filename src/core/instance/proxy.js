@@ -54,10 +54,10 @@ if (process.env.NODE_ENV !== 'production') {
 
   const hasHandler = {
     has (target, key) {
-      const has = key in target
+      const has = key in target //访问的vm实例的某个属性是否在vm实例中
       const isAllowed = allowedGlobals(key) ||
         (typeof key === 'string' && key.charAt(0) === '_' && !(key in target.$data))
-      if (!has && !isAllowed) {
+      if (!has && !isAllowed) { //即不在vm实例中也不是一个允许的属性
         //在data/methods中定义了一个和vue内部的私有属性重名的变量会报错,
         if (key in target.$data) warnReservedPrefix(target, key)
         // 开发过程中经常遇到的错误,在模板中定义了一个没有在data,methods等中声明的变量

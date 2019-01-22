@@ -45,10 +45,10 @@ export default class Watcher {
 //如果是computed属性生成的watcher实例第二个参数是computed属性的值(函数),且options.lazy为true
   constructor (
     vm: Component,
-    expOrFn: string | Function,
+    expOrFn: string | Function, //expression Or Function 作为一个渲染watcher会传入核心updateComponent的方法作为组件更新的函数
     cb: Function,
     options?: ?Object,
-    isRenderWatcher?: boolean
+    isRenderWatcher?: boolean //是否是渲染watcher
   ) {
     this.vm = vm
     if (isRenderWatcher) {

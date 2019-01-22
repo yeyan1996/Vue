@@ -26,7 +26,7 @@ const ALWAYS_NORMALIZE = 2
 // wrapper function for providing a more flexible interface
 // without getting yelled at by flow
 // 在用户定义的createElement函数基础上添加了vm作为第一个参数
-//对参数做了处理然后执行_createElement
+//对参数做了处理然后执行_createElement，返回一个vnode
 export function createElement (
   context: Component,
   tag: any,

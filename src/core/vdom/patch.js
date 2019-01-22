@@ -745,6 +745,7 @@ export function createPatchFunction (backend) {
       //不是一个真实的dom节点且vnode相同
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
         // patch existing root node
+
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
       } else {
         //如果是一个真实的dom节点(一般挂载点(id="app"的dom)都是真实的dom节点)

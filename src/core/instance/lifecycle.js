@@ -201,6 +201,7 @@ export function mountComponent (
       measure(`vue ${name} patch`, startTag, endTag)
     }
   } else {
+    //渲染watcher在实例化的时候会执行一次get方法调用updateComponent渲染出dom（src/core/observer/watcher.js:120）
     updateComponent = () => {
       //hydrating和SSR有关一般为false
       /**
