@@ -31,7 +31,7 @@ export function simpleNormalizeChildren (children: any) {
 // with hand-written render functions / JSX. In such cases a full normalization
 // is needed to cater to all possible types of children values.
 //无论如何都会返回一个数组
-export function normalizeChildren (children: any): ?Array<VNode> {
+export function  normalizeChildren (children: any): ?Array<VNode> {
   //如果是基本类型(类似传入this.message作为参数)
   return isPrimitive(children)
     //生成一个文本节点并且放入到数组中
@@ -60,19 +60,18 @@ function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNo
       if (c.length > 0) {
         c = normalizeArrayChildren(c, `${nestedIndex || ''}_${i}`)
         // merge adjacent text nodes
-        // 合并文本节点(优化)
+        // 合并多个文本节点(优化)
         if (isTextNode(c[0]) && isTextNode(last)) {
           res[lastIndex] = createTextVNode(last.text + (c[0]: any).text)
           c.shift()
         }
         res.push.apply(res, c)
       }
-    } else if (isPrimitive(c)) { //如果children为数组且遍历到的当前元素是个基础类型
+    } else if (isPrimitive(c)) { //如果children为数组且遍历到的当前元素是个基础类型就创建文本节点
       if (isTextNode(last)) {
         // merge adjacent text nodes
         // this is necessary for SSR hydration because text nodes are
         // essentially merged when rendered to HTML strings
-        // 创建文本节点
         res[lastIndex] = createTextVNode(last.text + c)
       } else if (c !== '') {
         // convert primitive to vnode

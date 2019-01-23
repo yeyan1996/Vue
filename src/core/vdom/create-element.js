@@ -27,15 +27,16 @@ const ALWAYS_NORMALIZE = 2
 // without getting yelled at by flow
 // 在用户定义的createElement函数基础上添加了vm作为第一个参数
 //对参数做了处理然后执行_createElement，返回一个vnode
+//这里会传入一个树形的节点
 export function createElement (
   context: Component,
-  tag: any,
-  data: any,
-  children: any,
+  tag: any, //根节点
+  data: any, //属性
+  children: any, //子节点
   normalizationType: any,
-  alwaysNormalize: boolean
+  alwaysNormalize: boolean  //false为编译器生的render函数，true为用户手写的render函数
 ): VNode | Array<VNode> {
-  //处理当data传入的是children(即省略了data)将后面的参数向前移位一次
+  //处理当data满足是一个数组，即传入的是children(省略了data)，则将后面的参数向前移位一次
   if (Array.isArray(data) || isPrimitive(data)) {
     normalizationType = children
     children = data
@@ -56,7 +57,7 @@ export function _createElement (
   children?: any,
   normalizationType?: number
 ): VNode | Array<VNode> {
-  // 当vnode的data属性是响应式的,会有警告
+  // data不能是响应式的
   if (isDef(data) && isDef((data: any).__ob__)) {
     process.env.NODE_ENV !== 'production' && warn(
       `Avoid using observed data object as vnode data: ${JSON.stringify(data)}\n` +
@@ -71,6 +72,7 @@ export function _createElement (
   }
   if (!tag) {
     // in case of component :is set to falsy value
+    //返回一个空的注释vnode
     return createEmptyVNode()
   }
   // warn against non-primitive key
@@ -93,10 +95,12 @@ export function _createElement (
     data.scopedSlots = { default: children[0] }
     children.length = 0
   }
-  //规范化children参数,如果children是个变量(考虑参数为类似this.message,并非vnode组成的数组)
+  //用户手写的render它的normalizationType = ALWAYS_NORMALIZE需要规范化
+  //规范化children，保证无论如何是一个数组（用户手写的children可能是个变量，类似this.message）
   if (normalizationType === ALWAYS_NORMALIZE) {
     children = normalizeChildren(children)
   } else if (normalizationType === SIMPLE_NORMALIZE) {
+    //children含有字符串就直接先生成文本节点，以及保证children是一个一维数组的操作
     children = simpleNormalizeChildren(children)
   }
   let vnode, ns //namespace
@@ -106,7 +110,7 @@ export function _createElement (
     ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag)
     if (config.isReservedTag(tag)) { //如果是html的保留标签(div,p,span)
       // platform built-in elements
-      //创建一个vnode
+      //创建一个html保留标签的vnode
       vnode = new VNode(
         config.parsePlatformTagName(tag), data, children,
         undefined, undefined, context

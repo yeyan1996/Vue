@@ -124,10 +124,10 @@ export function createPatchFunction (backend) {
   let creatingElmInVPre = 0
 
   //如果是组件vnode创建的dom节点只有前2个有值,第一个参数为组件的vnode,第二个参数为空数组
-  function createElm (
+  function  createElm (
     vnode,
     insertedVnodeQueue,
-    parentElm,
+    parentElm, //父的dom节点，最后一次为真实的body节点，插入到body下面（之前会挂载到父节点）
     refElm,
     nested,
     ownerArray,
@@ -196,7 +196,7 @@ export function createPatchFunction (backend) {
         if (isDef(data)) {
           invokeCreateHooks(vnode, insertedVnodeQueue)
         }
-        //插入节点(因为children可能是树形结构,所以递归调用的时候是从子插入到父)
+        //插入节点，因为children可能是树形结构,所以递归调用的时候是从子插入到父，子=>父=>真实dom（body节点）
         //子组件vnode执行的时候没有parentElm,执行这个函数什么都不会发生
         insert(parentElm, vnode.elm, refElm)
       }
@@ -309,7 +309,7 @@ export function createPatchFunction (backend) {
       for (let i = 0; i < children.length; ++i) {
         createElm(children[i], insertedVnodeQueue, vnode.elm, null, true, children, i)
       }
-    } else if (isPrimitive(vnode.text)) { //基础类型就创建一个文本节点
+    } else if (isPrimitive(vnode.text)) { //vnode.text是基础类型就创建一个文本节点添加到vnode.elm(相对于这个子节点的父节点)
       nodeOps.appendChild(vnode.elm, nodeOps.createTextNode(String(vnode.text)))
     }
   }
@@ -748,15 +748,17 @@ export function createPatchFunction (backend) {
 
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
       } else {
-        //如果是一个真实的dom节点(一般挂载点(id="app"的dom)都是真实的dom节点)
+        //如果是一个真实的dom节点，即Vue第一次进行挂载（id="app"）
         if (isRealElement) {
           // mounting to a real element
           // check if this is server-rendered content and if we can perform
           // a successful hydration.
+          //SSR相关为false
           if (oldVnode.nodeType === 1 && oldVnode.hasAttribute(SSR_ATTR)) {
             oldVnode.removeAttribute(SSR_ATTR)
             hydrating = true
           }
+          //也是false
           if (isTrue(hydrating)) {
             if (hydrate(oldVnode, vnode, insertedVnodeQueue)) {
               invokeInsertHook(vnode, insertedVnodeQueue, true)
@@ -778,6 +780,7 @@ export function createPatchFunction (backend) {
         }
 
         // replacing existing element
+        //将真实dom转换的vdom声明一个elm属性值为这个dom节点
         const oldElm = oldVnode.elm
         // 真实dom的parent节点(body)
         const parentElm = nodeOps.parentNode(oldElm)

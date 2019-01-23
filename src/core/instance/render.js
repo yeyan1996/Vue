@@ -27,7 +27,7 @@ export function initRender (vm: Component) {
   // so that we get proper render context inside it.
   // args order: tag, data, children, normalizationType, alwaysNormalize
   // internal version is used by render functions compiled from templates
-  // 这个函数是使用在编译生成的render函数
+  // 这个函数是使用编译器生成的render函数，和用户手写的区别在于第6个参数为false
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
   // normalization is always applied for the public version, used in
   // user-written render functions.
