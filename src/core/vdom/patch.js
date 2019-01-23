@@ -33,7 +33,7 @@ export const emptyNode = new VNode('', {}, [])
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
 function sameVnode (a, b) {
-  //满足一下条件会被认为是相同的节点
+  //满足以下条件会被认为是相同的节点
   return (
     a.key === b.key/*key值相同*/ && (
       (
@@ -315,7 +315,7 @@ export function createPatchFunction (backend) {
   }
 //找到一个挂载的节点
   function isPatchable (vnode) {
-    while (vnode.componentInstance) {
+    while (vnode.componentInstance) { //如果这个vnode的根节点还是一个占位符vnode,即根节点又是一个组件
       vnode = vnode.componentInstance._vnode
     }
     return isDef(vnode.tag)
@@ -420,13 +420,13 @@ export function createPatchFunction (backend) {
       removeNode(vnode.elm)
     }
   }
-
+  //oldCh是一个数组 newCh也是一个数组
   function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
     let oldStartIdx = 0
     let newStartIdx = 0
-    let oldEndIdx = oldCh.length - 1
-    let oldStartVnode = oldCh[0]
-    let oldEndVnode = oldCh[oldEndIdx]
+    let oldEndIdx = oldCh.length - 1 //获取旧vnode的最后一个的下标
+    let oldStartVnode = oldCh[0] //旧vnode数组中的第一个vnode
+    let oldEndVnode = oldCh[oldEndIdx] //旧vnode数组中的最后一个vnode
     let newEndIdx = newCh.length - 1
     let newStartVnode = newCh[0]
     let newEndVnode = newCh[newEndIdx]
@@ -447,6 +447,7 @@ export function createPatchFunction (backend) {
       } else if (isUndef(oldEndVnode)) {
         oldEndVnode = oldCh[--oldEndIdx]
       } else if (sameVnode(oldStartVnode, newStartVnode)) {
+        //符合某个条件会递归调用patchVnode遍历子节点的更新情况
         patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
         oldStartVnode = oldCh[++oldStartIdx]
         newStartVnode = newCh[++newStartIdx]
@@ -459,9 +460,11 @@ export function createPatchFunction (backend) {
         canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm))
         oldStartVnode = oldCh[++oldStartIdx]
         newEndVnode = newCh[--newEndIdx]
-      } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
-        patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
+      } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left 如果旧的vnode数组的最后一个元素=新vnode数组中的第一个元素
+        patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx) //递归遍历相等元素的子节点
+        //调用dom的insertBefore方法,将旧vnode数组的最后一个元素对应的dom放到parentElm的第一个子节点
         canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
+        //并且将当前准备迭代的旧的vnode数组的最后一位元素变成整个vnode数组的倒数第二个,当前新的vnode数组的第一个元素变成整个新vnode数组的第二个
         oldEndVnode = oldCh[--oldEndIdx]
         newStartVnode = newCh[++newStartIdx]
       } else {
@@ -776,7 +779,7 @@ export function createPatchFunction (backend) {
           // 将真实的dom($el)转换为vnode
           oldVnode = emptyNodeAt(oldVnode)
         }
-
+        //如果根节点?不同且不是一个真实的dom,则进行新旧vnode的切换
         // replacing existing element
         const oldElm = oldVnode.elm
         // 真实dom的parent节点(body)
@@ -798,12 +801,13 @@ export function createPatchFunction (backend) {
         //更新父的占位符节点
         if (isDef(vnode.parent)) {
           //占位符vnode
-          let ancestor = vnode.parent
+          let ancestor = vnode.parent //占位符节点
           const patchable = isPatchable(vnode)
           while (ancestor) {
             for (let i = 0; i < cbs.destroy.length; ++i) {
               cbs.destroy[i](ancestor)
             }
+            //将渲染vnode的dom节点更新到占位符vnode的elm属性上
             ancestor.elm = vnode.elm
             if (patchable) {
               for (let i = 0; i < cbs.create.length; ++i) {
@@ -822,6 +826,7 @@ export function createPatchFunction (backend) {
             } else {
               registerRef(ancestor)
             }
+            //因为ancestor是一个占位符vnode,占位符vnode是没有parent属性的(渲染vnode才有),所以这里就退出循环
             ancestor = ancestor.parent
           }
         }
