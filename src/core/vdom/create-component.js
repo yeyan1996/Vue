@@ -109,7 +109,7 @@ const hooksToMerge = Object.keys(componentVNodeHooks)
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
-  context: Component,
+  context: Component, //vm实例
   children: ?Array<VNode>,
   tag?: string
 ): VNode | Array<VNode> | void {
@@ -117,13 +117,13 @@ export function createComponent (
     return
   }
 
-  //_base为Vue构造函数（src/core/global-api/index.js）
+  //_base为Vue构造函数（src/core/global-api/index.js:54）
   const baseCtor = context.$options._base
 
   // plain options object: turn it into a constructor
+  //如果第一个参数为对象时调用Vue.extend()传入这个对象，返回一个子类的构造器函数(保证Ctor是一个函数)
+  // Vue.extend在src/core/global-api/extend.js:20
   if (isObject(Ctor)) {
-    //如果第一个参数为对象时调用Vue.extend()传入这个对象，返回一个子类的构造器函数
-    // Vue.extend在src/core/global-api/extend.js
     Ctor = baseCtor.extend(Ctor)
   }
 
@@ -196,14 +196,14 @@ export function createComponent (
   }
 
   // install component management hooks onto the placeholder node
-  //为组件添加不同的生命周期函数
+  //让组件的data.hooks属性拥有一些组件的钩子函数（init,prepatch,insert,destroy）
   installComponentHooks(data)
 
   // return a placeholder vnode
   const name = Ctor.options.name || tag
-  //组件同样也会生成一个vnode，他的3，4，5参数为空（children,text,elm）
+  //生成组件的vnode，他的3，4，5参数为空（children,text,elm）
   const vnode = new VNode(
-    // 组件vnode的tag名和一般的不一样
+    // 组件vnode的tag名和一般的不一样（方便调试）
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
     data, undefined, undefined, undefined, context,
     //第6个参数（componentOptions）即构造函数,props，listeners，tag,children组成的对象
@@ -219,6 +219,7 @@ export function createComponent (
     return renderRecyclableComponentTemplate(vnode)
   }
 
+  //返回一个组件vnode
   return vnode
 }
 
@@ -247,12 +248,18 @@ export function createComponentInstanceForVnode (
   return new vnode.componentOptions.Ctor(options)
 }
 
+//data为传入render函数的配置项data
+//让data.hooks属性拥有一些组件的钩子函数（init,prepatch,insert,destroy）
 function installComponentHooks (data: VNodeData) {
   const hooks = data.hook || (data.hook = {})
+  //hooksToMerge为（37）对象的所有键名（init,prepatch,insert,destroy）
   for (let i = 0; i < hooksToMerge.length; i++) {
     const key = hooksToMerge[i]
     const existing = hooks[key]
+    //找到在componentVNodeHooks和data.hook中都有的键名（方法名），并且返回这个方法（函数）
     const toMerge = componentVNodeHooks[key]
+    //如果data的hooks属性中和componentVNodeHooks的方法不一样且hooks没有被合并过，则将componentVNodeHooks和data.hooks进行合并
+    //合并策略为先执行componentVNodeHooks中的再执行data.hooks中的相应方法
     if (existing !== toMerge && !(existing && existing._merged)) {
       hooks[key] = existing ? mergeHook(toMerge, existing) : toMerge
     }

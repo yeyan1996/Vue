@@ -17,6 +17,7 @@ export function initExtend (Vue: GlobalAPI) {
    * Class inheritance
    */
   // 继承Vue构造函数的一些方法和属性（传入组件的options参数）返回组件的构造器
+  // 当给render函数的tag配置项是一个组件对象会转变成一个组件构造器（src/core/vdom/create-component.js:126），extendOptions为组件对象
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {}
     const Super = this
@@ -32,11 +33,11 @@ export function initExtend (Vue: GlobalAPI) {
       // 校验组件的name
       validateComponentName(name)
     }
-   //实例化子类构造函数的时候会执行_init方法传入options参数
+   /**实例化子类构造函数的时候会执行_init方法传入options参数 **/
     const Sub = function VueComponent (options) {
       this._init(options)
     }
-    // 继承了Vue构造函数
+    // 继承了Vue构造函数的原型对象（寄生组合式继承）
     Sub.prototype = Object.create(Super.prototype)
     Sub.prototype.constructor = Sub
     Sub.cid = cid++
@@ -60,6 +61,7 @@ export function initExtend (Vue: GlobalAPI) {
     }
 
     // allow further extension/mixin/plugin usage
+    //让这个子类构造器拥有Vue构造器的一些静态方法
     Sub.extend = Super.extend
     Sub.mixin = Super.mixin
     Sub.use = Super.use
@@ -83,7 +85,7 @@ export function initExtend (Vue: GlobalAPI) {
     Sub.sealedOptions = extend({}, Sub.options)
 
     // cache constructor
-    // 缓存了这个子类构造函数
+    // 缓存了这个子类构造函数，可以在渲染多个相同组件时，只生成一个子类构造器节约性能
     cachedCtors[SuperId] = Sub
     return Sub
   }

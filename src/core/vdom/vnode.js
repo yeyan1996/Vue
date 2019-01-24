@@ -32,12 +32,12 @@ export default class VNode {
   constructor (
     tag?: string,
     data?: VNodeData,
-    // 如果是组件children,text,elm为空
+    // 如果生成的是组件的vnode,则children,text,elm参数为空
     children?: ?Array<VNode>,
     text?: string,
     elm?: Node,
     context?: Component,
-    //如果是组件会有这个参数
+    //如果是组件会有这个参数，即组件配置项
     componentOptions?: VNodeComponentOptions,
     asyncFactory?: Function
   ) {

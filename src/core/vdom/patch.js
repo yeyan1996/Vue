@@ -164,7 +164,7 @@ export function createPatchFunction (backend) {
           )
         }
       }
-      //vnode的elm属性为一个真实的dom节点,这个时候创建了dom节点
+      //vnode的elm属性一开始为一个占位的dom节点，因为children的dom节点还没有生成，等递归遍历把所有的children的vnode变成真实dom就彻底生成了一个dom树
       vnode.elm = vnode.ns
         ? nodeOps.createElementNS(vnode.ns, tag)
         //createElement是document.createElement的封装
@@ -191,7 +191,7 @@ export function createPatchFunction (backend) {
           insert(parentElm, vnode.elm, refElm)
         }
       } else {
-        //创建子节点
+        //遍历children递归创建子节点，形成一棵树
         createChildren(vnode, children, insertedVnodeQueue)
         if (isDef(data)) {
           invokeCreateHooks(vnode, insertedVnodeQueue)
@@ -214,7 +214,7 @@ export function createPatchFunction (backend) {
     }
   }
 
-  //createElm中会执行这个
+  //createElm中如果是一个组件会执行这个函数
   //如果是子组件则第一参数为子组件vnode第二个参数为空数组,没有3,4参数
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data

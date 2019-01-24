@@ -206,7 +206,7 @@ export function mountComponent (
       //hydrating和SSR有关一般为false
       /**
        * 一般会走到这里,_render方法将实例转化为vnode(src/core/instance/render.js:64)
-       * 定义了_update(62)方法将vnode挂载到dom节点,核心逻辑
+       * 定义了_update(62)，它会执行__patch__方法将vnode转为dom节点（核心逻辑）
        * **/
       vm._update(vm._render(), hydrating)
     }

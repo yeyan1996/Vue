@@ -49,7 +49,7 @@ export function createElement (
   return _createElement(context, tag, data, children, normalizationType)
 }
 
-
+//传入render函数的createElement函数，它创建一个vnode并返回
 export function _createElement (
   context: Component,
   tag?: string | Class<Component> | Function | Object,
@@ -133,7 +133,7 @@ export function _createElement (
         undefined, undefined, context
       )
     }
-  } else { //否则tag为组件
+  } else { //否则当前节点是一个组件，则开始创建组件的vnode
     // direct component options / constructor
     vnode = createComponent(tag, data, context, children)
   }
