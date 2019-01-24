@@ -57,12 +57,12 @@ const componentVNodeHooks = {
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
-
+ //给子组件传值的时候,父组件数据变化会通过prepatch通知子组件数据变化
   prepatch (oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
     const options = vnode.componentOptions
     const child = vnode.componentInstance = oldVnode.componentInstance
     updateChildComponent(
-      child,
+      child, //旧vnode的vm实例
       options.propsData, // updated props
       options.listeners, // updated listeners
       vnode, // new parent vnode

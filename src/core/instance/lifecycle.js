@@ -238,10 +238,10 @@ export function mountComponent (
 }
 
 export function updateChildComponent (
-  vm: Component,
+  vm: Component, //组件vnode
   propsData: ?Object,
   listeners: ?Object,
-  parentVnode: MountedComponentVNode,
+  parentVnode: MountedComponentVNode, //占位符vnode
   renderChildren: ?Array<VNode>
 ) {
   if (process.env.NODE_ENV !== 'production') {
@@ -257,7 +257,7 @@ export function updateChildComponent (
     vm.$scopedSlots !== emptyObject // has old scoped slots
   )
 
-  vm.$options._parentVnode = parentVnode
+  vm.$options._parentVnode = parentVnode //parentVnode为这个组件在父组件作为占位符的vnode
   vm.$vnode = parentVnode // update vm's placeholder node without re-render
 
   if (vm._vnode) { // update child tree's parent
@@ -279,6 +279,8 @@ export function updateChildComponent (
     for (let i = 0; i < propKeys.length; i++) {
       const key = propKeys[i]
       const propOptions: any = vm.$options.props // wtf flow?
+      //将新的props值赋值给子组件(<hello-world :flag="flag"></hello-world>)
+      //同时触发setter函数执行dep实例的notify方法,最后触发子组件的渲染watcher的update方法渲染视图
       props[key] = validateProp(key, propOptions, propsData, vm)
     }
     toggleObserving(true)
