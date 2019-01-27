@@ -48,7 +48,6 @@ const componentVNodeHooks = {
     } else {
       //返回子组件的实例
       const child = vnode.componentInstance = createComponentInstanceForVnode(
-        //vnode
         vnode,
         //实例
         activeInstance
@@ -241,8 +240,8 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
-  //componentOptions即传入vnode类的第6个构造函数（202+）
-  // 这里等于new Ctor(options),等于执行了内部的_init方法(src/core/global-api/extend.js:37) Ctor=>Counstructor
+  //componentOptions即传入vnode类的第6个构造函数（209）
+  // 这里等于new Ctor(options),等于执行了内部的_init方法(src/core/global-api/extend.js:38) Ctor=>Counstructor
   // 即调用了Vue._init方法又重新初始化了一次(但是某些参数会有改变,多了_isComponent,parent,_parentVnode3个属性)
   //同时返回了一个子组件的实例
   return new vnode.componentOptions.Ctor(options)

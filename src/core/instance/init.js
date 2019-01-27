@@ -35,7 +35,7 @@ export function initMixin (Vue: Class<Component>) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
-      //合并组件的options
+      // 合并组件的options
       // 组件合并时更快，因为在初始化组件的构造函数,即执行Vue.extend函数时已经定义了options属性(src/core/global-api/extend.js:44)
       initInternalComponent(vm, options)
     } else {
@@ -85,7 +85,8 @@ export function initMixin (Vue: Class<Component>) {
 
 //组件的初始化
 export function initInternalComponent (vm: Component, options: InternalComponentOptions) {
-  //vm.constructor是子组件的构造器，它的options属性定义在src/core/global-api/extend.js:44里
+  //vm.constructor.options =>Ctor构造函数的options属性，即组件对象和Vue全局的options合并而成的对象（src/core/global-api/extend.js:44）
+  // 将这个options作为子组件实例的options属性
   const opts = vm.$options = Object.create(vm.constructor.options) // Sub.options
   // doing this because it's faster than dynamic enumeration.
   // 组件的options会有_parentVnode属性(占位符vnode)(src/core/vdom/create-component.js:218)

@@ -20,7 +20,7 @@ import {
 
 export let activeInstance: any = null
 export let isUpdatingChildComponent: boolean = false
-//将vm实例赋值给activeInstance(activeInstance和prevActiveInstance是父子关系)
+//将vm实例赋值给activeInstance(prevActiveInstance和activeInstance是父子关系)
 export function setActiveInstance(vm: Component) {
   const prevActiveInstance = activeInstance
   activeInstance = vm
@@ -30,6 +30,7 @@ export function setActiveInstance(vm: Component) {
 }
 
 export function initLifecycle (vm: Component) {
+  //子组件的vm实例
   const options = vm.$options
 
   // locate first non-abstract parent
@@ -62,9 +63,10 @@ export function lifecycleMixin (Vue: Class<Component>) {
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el
-    //update时prevVnode有值,因为上一次渲染的时候(把vnode赋值给vm._vnode)
+    //update时prevVnode有值,因为上一次渲染的时候(把vnode赋值给vm._vnode)，_vnode为渲染vnode
     const prevVnode = vm._vnode
-    //将vm实例赋值给activeInstance,返回一个将activeInstance从vm实例变成原始值的函数
+    //将vm实例赋值给activeInstance,将vm的parent赋值给preActiveInstance
+    // 返回一个将activeInstance从vm实例变成原始值的函数
     const restoreActiveInstance = setActiveInstance(vm)
     //_vnode是子组件的渲染vnode,$vnode是父组件的中的占位vnode(类似<hello-world></hello-world>)
     vm._vnode = vnode

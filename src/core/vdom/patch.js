@@ -123,6 +123,7 @@ export function createPatchFunction (backend) {
 
   let creatingElmInVPre = 0
 
+  //通过vnode创建dom元素
   //如果是组件vnode创建的dom节点只有前2个有值,第一个参数为组件的vnode,第二个参数为空数组
   function  createElm (
     vnode,
@@ -220,7 +221,8 @@ export function createPatchFunction (backend) {
     let i = vnode.data
     if (isDef(i)) {
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
-      //如果是组件的vnode会有init方法和hook属性,因为执行了installComponentHooks方法(191)
+      //如果是组件的vnode会有init方法和hook属性,因为执行了createElement中的installComponentHooks方法(src/core/vdom/create-component.js:200)
+      // 执行组件的init钩子
       if (isDef(i = i.hook) && isDef(i = i.init)) {
         /** 执行了patch 创建dom节点**/
         //执行vnode.data.init函数(src/core/vdom/create-component.js:43)
