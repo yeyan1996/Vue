@@ -118,7 +118,7 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
 export function observe (value: any, asRootData: ?boolean): Observer | void {
   //观察的对象必须是对象，不能是一个vnode
   if (!isObject(value) || value instanceof VNode) {
-    //直接返回Undefined
+    //不是对象直接返回
     return
   }
   let ob: Observer | void
