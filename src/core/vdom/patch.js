@@ -473,17 +473,18 @@ export function createPatchFunction (backend) {
         oldEndVnode = oldCh[--oldEndIdx]
         newStartVnode = newCh[++newStartIdx]
       } else {
-        //生成旧children的哈希表(对象)
+        //生成旧children的映射表
         if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
-        //如果新children的key存在则去这个哈希表找newStartVnode的key对应旧children的下标
+        //如果新children的key存在则去这个映射表找newStartVnode的key对应旧children的下标
         idxInOld = isDef(newStartVnode.key)
           ? oldKeyToIdx[newStartVnode.key]
-          //否则会去一个个比对,找是否在旧children有节点是samenode
+          //新节点中没有定义key则会去一个个比对,找是否在旧children有节点是samenode
           : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
+        //根据key没有找到节点则准备创建一个新节点
         if (isUndef(idxInOld)) { // New element
           createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
         } else {
-          //vnodeToMove为在哈希表中找到的,新children的key和旧children的key相同的节点
+          //vnodeToMove为在映射表中找到的,新children的key和旧children的key相同的节点
           vnodeToMove = oldCh[idxInOld]
           if (sameVnode(vnodeToMove, newStartVnode)) {
             patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
@@ -491,7 +492,7 @@ export function createPatchFunction (backend) {
             //将这个相似节点插入到旧children最前面(因为比对的是newStartVnode)
             canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm)
           } else {
-            //否则在哈希表找到的key对应的旧children和newStartVnode不是相似节点
+            //否则在映射表找到的key对应的旧children和newStartVnode不是相似节点
             //创建一个节点,并且插入到旧children最前面
             // same key but different element. treat as new element
             createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
@@ -741,8 +742,8 @@ export function createPatchFunction (backend) {
       return node.nodeType === (vnode.isComment ? 8 : 3)
     }
   }
- //__patch__返回的是这个patch函数
-  // 这个patch函数不会关心平台,在之前已经有柯里化的函数判断过了
+  /**_patch__返回的是这个patch函数**/
+  // patch函数不会关心平台,在之前已经有柯里化的函数判断过了
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
     if (isUndef(vnode)) {
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
@@ -752,12 +753,13 @@ export function createPatchFunction (backend) {
     let isInitialPatch = false
     const insertedVnodeQueue = []
 
-    //当是一个子组件生成dom节点的时候oldVnode(即vm.$el)为空进入下面的逻辑
+    //当是组件初始化生成dom节点的时候，oldVnode(即vm.$el)为空，创建组件的dom节点
     if (isUndef(oldVnode)) {
       // empty mount (likely as component), create new root element
       isInitialPatch = true
       createElm(vnode, insertedVnodeQueue)
     } else {
+      //否则为组件更新，会进行diff算法比对
       const isRealElement = isDef(oldVnode.nodeType)
       //不是一个真实的dom节点且是一个相似节点,会进行diff算法逐层比对
       //相似节点:最外层的vnode(不包括children)相同

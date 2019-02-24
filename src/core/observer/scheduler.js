@@ -104,6 +104,7 @@ function callUpdatedHooks (queue) {
   while (i--) {
     const watcher = queue[i]
     const vm = watcher.vm
+    //只有当遍历到渲染watcher时才触发updated钩子
     if (vm._watcher === watcher && vm._isMounted && !vm._isDestroyed) {
       callHook(vm, 'updated')
     }

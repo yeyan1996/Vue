@@ -39,7 +39,7 @@ methodsToPatch.forEach(function (method) {
         inserted = args.slice(2)
         break
     }
-    //将新增的元素变成响应式
+    //将新增的数组元素变成响应式
     if (inserted) ob.observeArray(inserted)
     // notify change
     //手动更新视图

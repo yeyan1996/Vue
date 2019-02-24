@@ -218,7 +218,8 @@ export function mountComponent (
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
   //实例化一个渲染watcher
-  /**执行这里会执行上面定义的updateComponent生成dom节点**/
+  /**在实例化渲染watcher过程中会执行上面定义的updateComponent生成dom节点**/
+  //内部this.value = this.get() 其中get函数会执行updateComponent
   new Watcher(vm, updateComponent, noop, {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {

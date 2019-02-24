@@ -52,6 +52,7 @@ export default class Watcher {
   ) {
     this.vm = vm
     if (isRenderWatcher) {
+      //将渲染watcher赋值给_watcher属性
       vm._watcher = this
     }
     vm._watchers.push(this)
@@ -79,7 +80,7 @@ export default class Watcher {
       : ''
     // parse expression for getter
     if (typeof expOrFn === 'function') {
-      // 将渲染watcher的getter属性等于这个函数,这里指的是updateComponent函数
+      // 将渲染watcher的getter属性等于updateComponent函数（updateComponent：生成dom节点的函数）
       //亦或是一个computed的watcher
       this.getter = expOrFn
     } else {

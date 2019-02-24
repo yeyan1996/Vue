@@ -133,7 +133,8 @@ export function _createElement (
         undefined, undefined, context
       )
     }
-  } else { //否则当前节点是一个组件，则开始创建组件的vnode
+  } else {
+    //否则当前节点是一个组件，则开始创建组件的vnode
     // direct component options / constructor
     vnode = createComponent(tag, data, context, children)
   }
