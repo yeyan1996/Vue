@@ -75,8 +75,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     if (!prevVnode) {
       // initial render
       // patch方法定义在src/core/vdom/patch.js:706+
-      // vm.$el是指原始的dom节点即id="app"的dom,vnode是vue构建的新的虚拟dom
-      /** 生成真实的dom节点 **/
+      /** 生成真实的dom节点保存在$el属性中 **/
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates

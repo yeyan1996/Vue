@@ -759,7 +759,7 @@ export function createPatchFunction (backend) {
       isInitialPatch = true
       createElm(vnode, insertedVnodeQueue)
     } else {
-      //否则为组件更新，会进行diff算法比对
+      //否则为组件树更新
       const isRealElement = isDef(oldVnode.nodeType)
       //不是一个真实的dom节点且是一个相似节点,会进行diff算法逐层比对
       //相似节点:最外层的vnode(不包括children)相同

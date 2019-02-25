@@ -33,7 +33,7 @@ export function initExtend (Vue: GlobalAPI) {
       // 校验组件的name
       validateComponentName(name)
     }
-   /**实例化子类构造函数的时候会执行_init方法传入options参数 **/
+   /**实例化子类构造函数的时候需要传入options(组件对象),并且执行Vue的_init方法(执行一系列生命周期,初始化data,.....) **/
     const Sub = function VueComponent (options) {
       this._init(options)
     }
@@ -55,7 +55,7 @@ export function initExtend (Vue: GlobalAPI) {
       initProps(Sub)
     }
     //这里已经提前把computed属性放到了组件的原型上，提前执行了defineComputed函数生成了属性的getter（src/core/instance/state.js:225）
-    //因为可以让多个组件贡献computed属性，节约性能
+    //因为可以让多个组件共享computed属性，节约性能
     if (Sub.options.computed) {
       initComputed(Sub)
     }

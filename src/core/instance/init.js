@@ -76,7 +76,9 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
-    // 如果有el属性就执行mount挂载到dom节点(src/platforms/web/entry-runtime-with-compiler.js)
+    // 如果有el属性就执行mount挂载到dom节点
+    // $mount会将template通过vue-loader编译成渲染函数然后执行mountComponent(src/platforms/web/entry-runtime-with-compiler.js)
+    // 核心是mountComponent函数(src/core/instance/lifecycle.js:155)
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }

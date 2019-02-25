@@ -36,9 +36,10 @@ Vue.prototype.$mount = function (
   //优先使用render属性,没有就走下面逻辑
   if (!options.render) {
     let template = options.template
-    // 没有render属性,判断有没有template属性(大部分情况)
     if (template) {
+      // 当template是字符串的时候(一般写的template模板字符串都会进入这个逻辑)
       if (typeof template === 'string') {
+        //第一个字符串是不是#,一般为false
         if (template.charAt(0) === '#') {
           template = idToTemplate(template)
           /* istanbul ignore if */
@@ -68,7 +69,7 @@ Vue.prototype.$mount = function (
         mark('compile')
       }
 
-      // Todo 将template编译成render函数(编译)
+      // Todo 将template编译成render函数(vue-loader编译)
       const { render, staticRenderFns } = compileToFunctions(template, {
         shouldDecodeNewlines,
         shouldDecodeNewlinesForHref,
@@ -85,7 +86,7 @@ Vue.prototype.$mount = function (
       }
     }
   }
-  //最终执行runtime/index中的mount方法(即执行src/core/instance/lifecycle.js中mountComponent)
+  //最终执行runtime/index中的mount方法(即执行src/core/instance/lifecycle.js中mountComponent:155)
   return mount.call(this, el, hydrating)
 }
 
