@@ -205,7 +205,7 @@ export function createComponent (
     // 组件vnode的tag名和一般的不一样（方便调试）
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
     data, undefined, undefined, undefined, context,
-    //第6个参数（componentOptions）即构造函数,props，listeners，tag,children组成的对象
+    //第6个参数（componentOptions）即组件的构造函数,props，listeners，tag,children组成的对象
     { Ctor, propsData, listeners, tag, children },
     asyncFactory
   )

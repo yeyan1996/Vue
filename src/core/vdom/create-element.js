@@ -49,7 +49,7 @@ export function createElement (
   return _createElement(context, tag, data, children, normalizationType)
 }
 
-//传入render函数的createElement函数，它创建一个vnode并返回
+//_createElement为传入render函数的createElement函数，它创建一个vnode并返回
 export function _createElement (
   context: Component,
   tag?: string | Class<Component> | Function | Object,

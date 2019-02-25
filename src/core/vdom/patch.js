@@ -498,6 +498,7 @@ export function createPatchFunction (backend) {
             createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
           }
         }
+        //让newStartVnode的指针指向下个新节点
         newStartVnode = newCh[++newStartIdx]
       }
     }

@@ -74,8 +74,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // based on the rendering backend used.
     if (!prevVnode) {
       // initial render
-      // patch方法定义在src/core/vdom/patch.js:706+
-      /** 生成真实的dom节点保存在$el属性中 **/
+      /** 生成真实的dom节点保存在$el属性中(src/core/vdom/patch.js:748) **/
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
