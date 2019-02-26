@@ -52,7 +52,7 @@ const componentVNodeHooks = {
         //实例
         activeInstance
       )
-      //子组件实例执行mountComponent函数(src/core/instance/lifecycle.js:148)
+      //子组件实例不会在init时候执行mount,因为没有el属性,在这里主动执行mountComponent函数(src/core/instance/lifecycle.js:148)
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
@@ -104,7 +104,7 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
-//当createElement第一个参数为一个组件对象时，执行下面的方法
+//创建组件节点
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
@@ -120,7 +120,7 @@ export function createComponent (
   const baseCtor = context.$options._base
 
   // plain options object: turn it into a constructor
-  //如果第一个参数为对象时调用Vue.extend()传入这个对象，返回一个子类的构造器函数(保证Ctor是一个函数)
+  //如果第一个参数为组件options时调用Vue.extend()传入这个对象，返回一个子类的构造器函数(保证Ctor是一个函数)
   // Vue.extend在src/core/global-api/extend.js:20
   if (isObject(Ctor)) {
     Ctor = baseCtor.extend(Ctor)
@@ -240,9 +240,10 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
-  //componentOptions即传入vnode类的第6个构造函数（209）
+  // componentOptions即传入vnode类的第6个构造函数（209）
+  // 和new Vue类似,但是这里换成在框架内部被动的实例化vm
   // 这里等于new Ctor(options),等于执行了内部的_init方法(src/core/global-api/extend.js:38) Ctor=>Counstructor
-  // 即调用了Vue._init方法又重新初始化了一次(但是某些参数会有改变,多了_isComponent,parent,_parentVnode3个属性)
+  // 即调用了Vue._init方法(但是某些参数会有改变,多了_isComponent,parent,_parentVnode3个属性)
   //同时返回了一个子组件的实例
   return new vnode.componentOptions.Ctor(options)
 }

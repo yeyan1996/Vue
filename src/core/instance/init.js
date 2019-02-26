@@ -30,7 +30,7 @@ export function initMixin (Vue: Class<Component>) {
     // a flag to avoid this being observed
     vm._isVue = true
     // merge options
-    //如果是一个组件对象(通过create-component.js调用的_init方法的_isComponent为true)
+    //如果是一个组件options(通过create-component.js调用的_init方法的_isComponent为true)
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the

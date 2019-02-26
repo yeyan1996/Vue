@@ -134,7 +134,8 @@ export function _createElement (
       )
     }
   } else {
-    //否则当前节点是一个组件，则开始创建组件的vnode
+    //否则当前节点是一个组件，创建组件的vnode
+    //组件vnode含有componentOptions属性,保存着组件构造器Ctor,和插槽的children(组件是没有children的)
     // direct component options / constructor
     vnode = createComponent(tag, data, context, children)
   }

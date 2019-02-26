@@ -125,7 +125,7 @@ export function createPatchFunction (backend) {
 
   let creatingElmInVPre = 0
 
-  //通过vnode创建dom元素
+  //patch最终会调用这个createElm将vnode转换为dom节点
   //如果是组件vnode创建的dom节点只有前2个有值,第一个参数为组件的vnode,第二个参数为空数组
   function  createElm (
     vnode,
@@ -217,7 +217,7 @@ export function createPatchFunction (backend) {
     }
   }
 
-  //createElm中如果是一个组件会执行这个函数
+  //createElm中如果是一个组件会执行这个函数,创建组件的dom节点
   //如果是子组件则第一参数为子组件vnode第二个参数为空数组,没有3,4参数
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data
@@ -227,7 +227,7 @@ export function createPatchFunction (backend) {
       // 执行组件的init钩子
       if (isDef(i = i.hook) && isDef(i = i.init)) {
         /** 执行了patch 创建dom节点**/
-        //执行vnode.data.init函数(src/core/vdom/create-component.js:43)
+        //执行vnode.data.init函数(src/core/vdom/create-component.js:38)
         i(vnode, false /* hydrating */)
       }
       // after calling the init hook, if the vnode is a child component
