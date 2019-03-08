@@ -46,7 +46,7 @@ const componentVNodeHooks = {
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
-      //返回子组件的实例
+      //createComponentInstanceForVnode通过调用子组件的构造器返回子组件的实例
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         //实例

@@ -75,7 +75,8 @@ export function lifecycleMixin (Vue: Class<Component>) {
     if (!prevVnode) {
       // initial render
       /** 生成真实的dom节点保存在$el属性中(src/core/vdom/patch.js:748) **/
-      vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
+
+      vm.$el = vm.__patch__(/*第一次渲染这个值为undefined*/vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
       //如果有prevVnode,即是子组件vnode的__patch__方法,会传入2个参数

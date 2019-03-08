@@ -745,6 +745,7 @@ export function createPatchFunction (backend) {
   }
   /**_patch__返回的是这个patch函数**/
   // patch函数不会关心平台,在之前已经有柯里化的函数判断过了
+  //只有当组件更新/根实例创建的时候会有oldVnode,组件创建没有oldVnode
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
     if (isUndef(vnode)) {
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
