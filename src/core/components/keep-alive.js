@@ -72,6 +72,7 @@ export default {
   },
 
   mounted () {
+    //监听include/exclude的改变,根据规则在cache映射表中过滤不符合的name对应的vnode,并且执行销毁vnode的$destroy方法
     this.$watch('include', val => {
       pruneCache(this, name => matches(val, name))
     })
@@ -82,6 +83,7 @@ export default {
 
   render () {
     const slot = this.$slots.default
+    //获取keep-alive组件插槽中的第一个组件
     const vnode: VNode = getFirstComponentChild(slot)
     const componentOptions: ?VNodeComponentOptions = vnode && vnode.componentOptions
     if (componentOptions) {
@@ -98,25 +100,30 @@ export default {
       }
 
       const { cache, keys } = this
+      //获取该组件的key
       const key: ?string = vnode.key == null
         // same constructor may get registered as different local components
         // so cid alone is not enough (#3269)
         ? componentOptions.Ctor.cid + (componentOptions.tag ? `::${componentOptions.tag}` : '')
         : vnode.key
+      //这里同时定义了cache对象和keys数组
       if (cache[key]) {
         vnode.componentInstance = cache[key].componentInstance
         // make current key freshest
+        //当当前组件被使用过后会把它放到keys数组(栈)的最上面,在数组中更新这个vnode
         remove(keys, key)
         keys.push(key)
       } else {
+        //如果cache中没有这个组件则在cache中记录这个组件
         cache[key] = vnode
         keys.push(key)
         // prune oldest entry
+        //如果设置了max(防止keep-alive组件存储过多的vnode实例占用内存),会根据max去除在keys数组栈底的元素(去除使用频率最低的vnode),同时会执行销毁vnode的$destroy方法
         if (this.max && keys.length > parseInt(this.max)) {
           pruneCacheEntry(cache, keys[0], keys, this._vnode)
         }
       }
-
+    //设置keepalive标记位
       vnode.data.keepAlive = true
     }
     return vnode || (slot && slot[0])

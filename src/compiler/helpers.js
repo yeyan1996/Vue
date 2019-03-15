@@ -95,6 +95,7 @@ export function addHandler (
   let events
   if (modifiers.native) {
     delete modifiers.native
+    //将native修饰符从modifiers对象中删除,并且声明一个nativeEvents对象存储当前传入的事件
     events = el.nativeEvents || (el.nativeEvents = {})
   } else {
     events = el.events || (el.events = {})

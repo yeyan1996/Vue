@@ -30,6 +30,7 @@ import {
 
 export const emptyNode = new VNode('', {}, [])
 
+//这些钩子会在不同时期给dom节点添加class,事件,或者dom属性
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
 //满足以下条件会被认为是相同的节点
@@ -74,6 +75,8 @@ export function createPatchFunction (backend) {
   let i, j
   const cbs = {}
 
+  //backend会针对不同平台返回不同的值
+  //modules(src/platforms/web/runtime/modules/index.js:8)
   const { modules, nodeOps } = backend
 
   for (i = 0; i < hooks.length; ++i) {
@@ -222,6 +225,7 @@ export function createPatchFunction (backend) {
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data
     if (isDef(i)) {
+      //被keepalive组件缓存过为true
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
       //如果是组件的vnode会有init方法和hook属性,因为执行了createElement中的installComponentHooks方法(src/core/vdom/create-component.js:200)
       // 执行组件的init钩子
@@ -243,6 +247,7 @@ export function createPatchFunction (backend) {
         //将dom节点插入到父组件中
         insert(parentElm, vnode.elm, refElm)
         if (isTrue(isReactivated)) {
+          //让keep-alive组件包裹的组件插入到父节点
           reactivateComponent(vnode, insertedVnodeQueue, parentElm, refElm)
         }
         return true
@@ -327,6 +332,8 @@ export function createPatchFunction (backend) {
 
   function invokeCreateHooks (vnode, insertedVnodeQueue) {
     for (let i = 0; i < cbs.create.length; ++i) {
+      //执行模块的create钩子(73),会挂载监听事件
+      //对于事件的初始化来说create和update功能都相同,但create的第一个参数是一个空的vnode节点,而update是旧的vnode节点
       cbs.create[i](emptyNode, vnode)
     }
     i = vnode.data.hook // Reuse variable
@@ -589,6 +596,7 @@ export function createPatchFunction (backend) {
     const oldCh = oldVnode.children
     const ch = vnode.children
     if (isDef(data) && isPatchable(vnode)) {
+      //在更新的时候会调用模块的update钩子
       for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode)
       if (isDef(i = data.hook) && isDef(i = i.update)) i(oldVnode, vnode)
     }

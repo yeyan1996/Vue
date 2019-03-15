@@ -110,6 +110,7 @@ function genHandler (
     const keys = []
     for (const key in handler.modifiers) {
       if (modifierCode[key]) {
+        //如果在modifierCode中能找到相应的值(例如prevent:'$event.preventDefault();'),则会拼接字符串
         genModifierCode += modifierCode[key]
         // left/right
         if (keyCodes[key]) {
@@ -132,6 +133,7 @@ function genHandler (
     }
     // Make sure modifiers like prevent and stop get executed after key filtering
     if (genModifierCode) {
+      //将多个genModifierCode(可能有多个修饰符)拼接成最终的代码
       code += genModifierCode
     }
     const handlerCode = isMethodPath
@@ -143,6 +145,11 @@ function genHandler (
     if (__WEEX__ && handler.params) {
       return genWeexHandler(handler.params, code + handlerCode)
     }
+    //返回事件修饰符对应的原生代码+事件处理程序
+    //@example `function($event){
+    //        $event.preventDefault();
+    //       return  handleClick($event)
+    // }`
     return `function($event){${code}${handlerCode}}`
   }
 }

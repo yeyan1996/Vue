@@ -32,8 +32,10 @@ const normalizeEvent = cached((name: string): {
 })
 
 export function createFnInvoker (fns: Function | Array<Function>): Function {
+  //这个函数是真正的事件处理程序
   function invoker () {
     const fns = invoker.fns
+      //如果是数组(对同一个事件绑定多个事件处理程序)
     if (Array.isArray(fns)) {
       const cloned = fns.slice()
       for (let i = 0; i < cloned.length; i++) {
@@ -41,6 +43,7 @@ export function createFnInvoker (fns: Function | Array<Function>): Function {
       }
     } else {
       // return handler return value for single handlers
+      //这个地方直接使用argument将事件对象和其余参数一并传入事件处理程序中
       return fns.apply(null, arguments)
     }
   }
@@ -60,6 +63,7 @@ export function updateListeners (
   for (name in on) {
     def = cur = on[name]
     old = oldOn[name]
+    //解析修饰符(~,&,!之类的符号(在编译阶段会将capture等修饰符换成符号))
     event = normalizeEvent(name)
     /* istanbul ignore if */
     if (__WEEX__ && isPlainObject(def)) {
@@ -71,15 +75,18 @@ export function updateListeners (
         `Invalid handler for event "${event.name}": got ` + String(cur),
         vm
       )
-    } else if (isUndef(old)) {
+    } else if (isUndef(old)) { //开始创建事件
       if (isUndef(cur.fns)) {
         cur = on[name] = createFnInvoker(cur)
       }
+      //如果有once标记则在执行一次后,调用removeListener移除事件处理程序(src/platforms/web/runtime/modules/events.js:31)
       if (isTrue(event.once)) {
         cur = on[name] = createOnceHandler(event.name, cur, event.capture)
       }
+      //add定义在(src/platforms/web/runtime/modules/events.js:41)
       add(event.name, cur, event.capture, event.passive, event.params)
-    } else if (cur !== old) {
+    } else if (cur !== old) { //开始更新事件
+      //只要将旧的fns属性指向新的事件处理程序即可
       old.fns = cur
       on[name] = old
     }

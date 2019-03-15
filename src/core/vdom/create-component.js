@@ -33,15 +33,16 @@ import {
 } from 'weex/runtime/recycle-list/render-component-template'
 
 // inline hooks to be invoked on component VNodes during patch
-//执行installComponentHooks(244)函数的时候会用到这个对象
+//执行installComponentHooks(253)函数的时候会用到这个对象
 const componentVNodeHooks = {
+  //init钩子会创建子组件实例
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
       vnode.componentInstance &&
       !vnode.componentInstance._isDestroyed &&
       vnode.data.keepAlive
     ) {
-      //是keep-alive走这个逻辑
+      //如果组件被keep-alive缓存过了,则会直接prepatch不会在执行$mount(也就不会触发mounted,created等钩子)
       // kept-alive components, treat as a patch
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
@@ -52,7 +53,7 @@ const componentVNodeHooks = {
         //实例
         activeInstance
       )
-      //子组件实例不会在init时候执行mount,因为没有el属性,在这里主动执行mountComponent函数(src/core/instance/lifecycle.js:148)
+      //子组件实例不会在Vue.init时候执行mount,因为没有el属性,而在这里主动执行mountComponent函数(src/core/instance/lifecycle.js:148)
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
@@ -177,6 +178,9 @@ export function createComponent (
 
   // extract listeners, since these needs to be treated as
   // child component listeners instead of DOM listeners
+
+  //将组件的监听事件保存在listeners变量中,并且将原生的监听事件赋值给on属性
+  //并且这个自定义事件会作为组件的options在子组件初始化执行init的时候执行initEvent
   const listeners = data.on
   // replace with listeners with .native modifier
   // so it gets processed during parent component patch.
@@ -248,7 +252,7 @@ export function createComponentInstanceForVnode (
   return new vnode.componentOptions.Ctor(options)
 }
 
-//data为传入render函数的配置项data
+//data是传入render函数的配置项data
 //让data.hooks属性拥有一些组件的钩子函数（init,prepatch,insert,destroy）
 function installComponentHooks (data: VNodeData) {
   const hooks = data.hook || (data.hook = {})

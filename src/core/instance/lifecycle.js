@@ -36,6 +36,7 @@ export function initLifecycle (vm: Component) {
   // locate first non-abstract parent
   let parent = options.parent
   //如果这个组件有父组件
+  //抽象组件(keep-alive,transition)不会被添加到页面中
   if (parent && !options.abstract) {
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
@@ -326,6 +327,7 @@ export function activateChildComponent (vm: Component, direct?: boolean) {
   if (vm._inactive || vm._inactive === null) {
     vm._inactive = false
     for (let i = 0; i < vm.$children.length; i++) {
+      //递归执行所有子组件的activated钩子
       activateChildComponent(vm.$children[i])
     }
     callHook(vm, 'activated')
