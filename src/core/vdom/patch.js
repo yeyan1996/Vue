@@ -482,7 +482,7 @@ export function createPatchFunction (backend) {
       } else {
         //生成旧children的映射表
         if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
-        //如果新children的key存在则去这个映射表找newStartVnode的key对应旧children的下标
+        //如果newStartVnode的key存在则去这个映射表找newStartVnode的key对应旧children的下标
         idxInOld = isDef(newStartVnode.key)
           ? oldKeyToIdx[newStartVnode.key]
           //新节点中没有定义key则会去一个个比对,找是否在旧children有节点是samenode
