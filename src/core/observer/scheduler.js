@@ -35,7 +35,7 @@ function resetSchedulerState () {
 /**
  * Flush both queues and run the watchers.
  */
-//当数据发生变化的时候会执行这个函数
+//数据发生变化的时候更新所有的队列的函数
 function flushSchedulerQueue () {
   flushing = true
   let watcher, id
@@ -52,6 +52,7 @@ function flushSchedulerQueue () {
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
+  //queue是watcher组成的队列
   //每次循环都会判断queue的长度，这个队列长度可能会发生变化
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
@@ -65,7 +66,7 @@ function flushSchedulerQueue () {
     // in dev build, check and stop circular updates.
 
     if (process.env.NODE_ENV !== 'production' && has[id] != null) {
-      //如果队列中有之前相同的watcher会给circular对象的这个id加一
+      //如果队列中有之前相同的watcher会给circular对象的这个id加一（当watch的回调修改了watch的变量会导致死循环）
       circular[id] = (circular[id] || 0) + 1
       if (circular[id] > MAX_UPDATE_COUNT) {
         warn(

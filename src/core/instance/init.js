@@ -58,6 +58,7 @@ export function initMixin (Vue: Class<Component>) {
     // expose real self
     vm._self = vm
     initLifecycle(vm)
+    //初始化自定义事件
     initEvents(vm)
     initRender(vm)
     //执行beforeCreate钩子（这个钩子执行的时候initState还没执行没有data等一系列属性）

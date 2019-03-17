@@ -51,6 +51,7 @@ export function createFnInvoker (fns: Function | Array<Function>): Function {
   return invoker
 }
 
+//更新自定义事件和DOM原生事件
 export function updateListeners (
   on: Object,
   oldOn: Object,

@@ -14,6 +14,7 @@ export function initEvents (vm: Component) {
   vm._events = Object.create(null)
   vm._hasHookEvent = false
   // init parent attached events
+  //拿到这个组件在父节点中的占位符节点的所有监听事件（外层声明的自定义事件）
   const listeners = vm.$options._parentListeners
   if (listeners) {
     updateComponentListeners(vm, listeners)
@@ -40,6 +41,8 @@ function createOnceHandler (event, fn) {
   }
 }
 
+/**自定义事件和原生事件的区别在于add/remove方法不同**/
+//原生DOM事件的add方法（src/platforms/web/runtime/modules/events.js:42）
 export function updateComponentListeners (
   vm: Component,
   listeners: Object,

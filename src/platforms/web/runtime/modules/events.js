@@ -38,6 +38,7 @@ function createOnceHandler (event, handler, capture) {
   }
 }
 
+//DOM原生事件的add/remove方法
 function add (
   event: string,
   handler: Function,

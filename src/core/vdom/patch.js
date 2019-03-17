@@ -30,7 +30,7 @@ import {
 
 export const emptyNode = new VNode('', {}, [])
 
-//这些钩子会在不同时期给dom节点添加class,事件,或者dom属性
+//这些vdom钩子会在不同时期给vdom添加class,事件,或者dom属性
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
 //满足以下条件会被认为是相同的节点
