@@ -137,17 +137,20 @@ strats.data = function (
  * Hooks and props are merged as arrays.
  */
 //返回了一个生命周期组成的数组
+//因为子组件的构造函数是通过Vue.extend只继承了Vue的options，所以parentVal指的只是大Vue构造函数
 function mergeHook (
   parentVal: ?Array<Function>,
   childVal: ?Function | ?Array<Function>
 ): ?Array<Function> {
   return childVal ?
     parentVal ?
-      parentVal.concat(childVal) //父子都有生命周期就用父的加上子的(数组顺序先父=》子)
+      //大Vue.options中有和子组件相同的生命周期钩子，就合并成一个数组
+      // 并且让Vue.options中的声明周期钩子先执行 => 当前组件的当前生命周期的回调
+      parentVal.concat(childVal)
       : Array.isArray(childVal) ? //子有生命周期但是父没有时，判断子是否是由生命周期函数组成的数组
       childVal //直接返回
-        : [childVal] //用数组包裹确保是一个数组
-    : parentVal //子没有生命周期需要合并的就用父的
+        : [childVal] //用数组包裹确保子组件的生命周期函数是一个数组组成的集合
+    : parentVal //当前组件没有当前的生命周期的回调就使用Vue.options里的那个生命周期函数数组
 }
 
 LIFECYCLE_HOOKS.forEach(hook => {
