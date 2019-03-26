@@ -34,6 +34,7 @@ import {
 
 // inline hooks to be invoked on component VNodes during patch
 //执行installComponentHooks(253)函数的时候会用到这个对象
+//声明了组件vnode的钩子
 const componentVNodeHooks = {
   //init钩子会创建子组件实例
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
@@ -53,14 +54,15 @@ const componentVNodeHooks = {
         //实例
         activeInstance
       )
-      //子组件实例不会在Vue.init时候执行mount,因为没有el属性,而在这里主动执行mountComponent函数(src/core/instance/lifecycle.js:148)
+      /**子组件实例不会在Vue.init时候执行mount,因为没有el属性,而在这里主动执行mountComponent函数(src/core/instance/lifecycle.js:148)**/
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
- //给子组件传值的时候,父组件数据变化会通过prepatch通知子组件数据变化
+ //给子组件传值的时候,父组件数据变化会通过prepatch钩子通知子组件数据变化(src/core/vdom/patch.js:596执行prepatch)
   prepatch (oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
     const options = vnode.componentOptions
     const child = vnode.componentInstance = oldVnode.componentInstance
+    //更新子组件的props/listeners
     updateChildComponent(
       child, //旧vnode的vm实例
       options.propsData, // updated props
@@ -69,7 +71,7 @@ const componentVNodeHooks = {
       options.children // new children
     )
   },
-
+  //insert钩子用来触发子组件的mounted钩子
   insert (vnode: MountedComponentVNode) {
     const { context, componentInstance } = vnode
     if (!componentInstance._isMounted) {
@@ -105,7 +107,7 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
-//创建组件节点
+//创建组件vnode
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,

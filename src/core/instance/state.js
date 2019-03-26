@@ -88,6 +88,7 @@ function initProps (vm: Component, propsOptions: Object) {
       }
       //将props的key变成响应式
       defineReactive(props, key, value, () => {
+        //当子组件尝试修改父组件传入的props时会报警告(违反单向数据流)
         if (!isRoot && !isUpdatingChildComponent) {
           warn(
             `Avoid mutating a prop directly since the value will be ` +

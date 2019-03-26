@@ -231,7 +231,7 @@ export function mountComponent (
 
   // manually mounted instance, call mounted on self
   // mounted is called for render-created child components in its inserted hook
-  //$vnode是父vnode，这里指的是没有父vnode，即已经是一个根节点了
+  //$vnode是占位符vnode，这里指的是没有占位符vnode，即已经是一个根节点了
   if (vm.$vnode == null) {
     vm._isMounted = true
     // 执行mounted钩子
@@ -240,6 +240,7 @@ export function mountComponent (
   return vm
 }
 
+//更新子组件的props和listeners
 export function updateChildComponent (
   vm: Component, //组件vnode
   propsData: ?Object,
@@ -283,7 +284,7 @@ export function updateChildComponent (
       const key = propKeys[i]
       const propOptions: any = vm.$options.props // wtf flow?
       //将新的props值赋值给子组件(<hello-world :flag="flag"></hello-world>)
-      //同时触发setter函数执行dep实例的notify方法,最后触发子组件的渲染watcher的update方法渲染视图
+      /**赋值时会触发对应key的setter函数,执行dep实例的notify方法,最后触发子组件的渲染watcher的update方法渲染视图**/
       props[key] = validateProp(key, propOptions, propsData, vm)
     }
     toggleObserving(true)

@@ -200,6 +200,7 @@ export function defineReactive (
         return
       }
       /* eslint-enable no-self-compare */
+      //执行customSetter(给props初始化为响应式对象时会传入一个customSetter函数,防止props被子组件修改违背单向数据流)
       if (process.env.NODE_ENV !== 'production' && customSetter) {
         customSetter()
       }
