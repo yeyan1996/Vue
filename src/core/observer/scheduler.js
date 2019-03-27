@@ -44,6 +44,7 @@ function flushSchedulerQueue () {
   // This ensures that:
   // 1. Components are updated from parent to child. (because parent is always
   //    created before the child)
+  // 保证user watcher在渲染watcher之前触发
   // 2. A component's user watchers are run before its render watcher (because
   //    user watchers are created before the render watcher)
   // 3. If a component is destroyed during a parent component's watcher run,
@@ -53,7 +54,7 @@ function flushSchedulerQueue () {
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
   //queue是watcher组成的队列
-  //每次循环都会判断queue的长度，这个队列长度可能会发生变化
+  //每次循环都会求queue的长度，因为这个队列长度可能会发生变化（一个watcher导致了别的响应式变量被修改了同时触发依赖收集，再次添加watcher）
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
     //watch实例的options中含有before方法则执行，即执行beforeUpdate钩子（src/core/instance/lifecycle.js:217）
@@ -86,7 +87,7 @@ function flushSchedulerQueue () {
   //keep-alive
   const activatedQueue = activatedChildren.slice()
   const updatedQueue = queue.slice()
- //重置一些has,queue的长度
+ //当当前轮的queue全部遍历完之后，清空has对象,queue数组
   resetSchedulerState()
 
   // call component updated and activated hooks(2个生命周期钩子)
@@ -145,26 +146,31 @@ export function queueWatcher (watcher: Watcher) {
       //往队列里放入一个watcher实例
       queue.push(watcher)
     } else {
+      //在flushSchedulerQueue的过程中，某个watch的回调内部又修改了响应式变量则会进入这个逻辑（user watcher）
+      //此时flushSchedulerQueue还在遍历中
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
+      //i为queue数组的最后一个元素下标
       let i = queue.length - 1
-      //如果i大于index或者队列最后一位的id小于当前watcher实例的id就会插入这个watcher
+      //index = 0
+      //因为queue队列是按id顺序排列的
+      // 这里会尝试按照当前传入的watcher的id找到顺序queue数组的相应的位置插入
       while (i > index && queue[i].id > watcher.id) {
-        //否则就一直减i，当i小于-1就插补到队列中了
         i--
       }
       queue.splice(i + 1, 0, watcher)
     }
     // queue the flush
     if (!waiting) {
+      //当有一个任务被推进了queue队列中时，就会准备在nextTick中flushSchedulerQueue（执行所有队列）
+      //这时声明了waiting标志位，防止重复执行nextTick，反复添加微任务，即第二次有watcher被放入queue不会触发下面逻辑
       waiting = true
-
-      //vue暴露了一个是否异步更新队列的配合项,一般都会true,即下面这个循环不会走到
+      //vue暴露了一个是否异步更新队列的配合项,一般都会true,即下面这个逻辑一般为false
       if (process.env.NODE_ENV !== 'production' && !config.async) {
         flushSchedulerQueue()
         return
       }
-      //异步更新队列
+      //在下一个tick（一半会是当前任务的微任务）执行flushSchedulerQueue
       nextTick(flushSchedulerQueue)
     }
   }

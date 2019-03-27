@@ -210,8 +210,9 @@ export default class Watcher {
       //对于渲染watcher它的value为undefined
       //这里由于run函数是由数据setter函数触发的，所以当数据改变后会重新渲染视图（执行get方法等于执行updateComponent）
       const value = this.get()
-        //如果新值和旧值是一样的则什么都不会发生(computed/watch)
       if (
+        //如果新值和旧值是一样的则什么都不会发生(computed/watch)
+        //如果监听的是一个对象，对象的属性改变了，但新值和旧值使用的仍是同一个堆内存中的对象所以也是相等的
         value !== this.value ||
         // Deep watchers and watchers on Object/Arrays should fire even
         // when the value is the same, because the value may
@@ -225,6 +226,7 @@ export default class Watcher {
         //如果是user watcher会执行cb(handler)
         if (this.user) {
           try {
+            //给user watcher传入了新的value和旧的value
             this.cb.call(this.vm, value, oldValue)
           } catch (e) {
             handleError(e, this.vm, `callback for watcher "${this.expression}"`)
