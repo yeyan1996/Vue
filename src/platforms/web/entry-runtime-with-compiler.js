@@ -69,7 +69,7 @@ Vue.prototype.$mount = function (
         mark('compile')
       }
 
-      // Todo 将template编译成render函数(vue-loader编译)
+      //compileToFunctions定义在src/compiler/to-function.js:23
       const { render, staticRenderFns } = compileToFunctions(template, {
         shouldDecodeNewlines,
         shouldDecodeNewlinesForHref,

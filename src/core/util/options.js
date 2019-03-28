@@ -137,20 +137,20 @@ strats.data = function (
  * Hooks and props are merged as arrays.
  */
 //返回了一个生命周期组成的数组
-//因为子组件的构造函数是通过Vue.extend只继承了Vue的options，所以parentVal指的只是大Vue构造函数
+//因为子组件的构造函数是通过Vue.extend只继承了Vue的options，所以parentVal指的只是大Vue构造函数或者局部混入
+/**钩子的执行顺序:全局混入钩子=>局部混入钩子=>组件钩子**/
 function mergeHook (
   parentVal: ?Array<Function>,
   childVal: ?Function | ?Array<Function>
 ): ?Array<Function> {
   return childVal ?
     parentVal ?
-      //大Vue.options中有和子组件相同的生命周期钩子，就合并成一个数组
-      // 并且让Vue.options中的声明周期钩子先执行 => 当前组件的当前生命周期的回调
+      //大Vue.options/局部混入中有和子组件相同的生命周期钩子，就合并成一个数组
       parentVal.concat(childVal)
       : Array.isArray(childVal) ? //子有生命周期但是父没有时，判断子是否是由生命周期函数组成的数组
       childVal //直接返回
         : [childVal] //用数组包裹确保子组件的生命周期函数是一个数组组成的集合
-    : parentVal //当前组件没有当前的生命周期的回调就使用Vue.options里的那个生命周期函数数组
+    : parentVal //当前组件没有当前的生命周期的回调就使用Vue.options/局部混入里的那个生命周期函数数组
 }
 
 LIFECYCLE_HOOKS.forEach(hook => {
@@ -397,7 +397,7 @@ export function mergeOptions (
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm)
     }
-    //如果传入的options含有mixins就递归调用
+    //如果传入的options含有mixins属性,表示含有局部混入,遍历局部混入的数组,依次合并options
     if (child.mixins) {
       for (let i = 0, l = child.mixins.length; i < l; i++) {
         parent = mergeOptions(parent, child.mixins[i], vm)
