@@ -48,6 +48,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     }
 
     // check cache
+    //多次编译相同的模板直接使用第一次的缓存,减少不必要的性能开销
     const key = options.delimiters
       ? String(options.delimiters) + template
       : template
@@ -56,7 +57,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     }
 
     // compile
-    /**执行编译的**/
+    //执行编译
     const compiled = compile(template, options)
 
     // check compilation errors/tips
@@ -76,6 +77,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     // turn code into functions
     const res = {}
     const fnGenErrors = []
+    //将compiled.render(字符串)通过new Function形式执行,变成render函数
     res.render = createFunction(compiled.render, fnGenErrors)
     res.staticRenderFns = compiled.staticRenderFns.map(code => {
       return createFunction(code, fnGenErrors)
@@ -94,7 +96,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
         )
       }
     }
-
+    //缓存编译后的res对象
     return (cache[key] = res)
   }
 }

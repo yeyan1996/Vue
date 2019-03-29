@@ -6,6 +6,7 @@ import { createCompileToFunctionFn } from './to-function'
 
 export function createCompilerCreator (baseCompile: Function): Function {
   return function createCompiler (baseOptions: CompilerOptions) {
+    //执行编译的函数
     function compile (
       template: string,
       options?: CompilerOptions
@@ -46,7 +47,7 @@ export function createCompilerCreator (baseCompile: Function): Function {
       compiled.tips = tips
       return compiled
     }
-
+    //利用了函数柯里化,保存了baseOptions选项,暴露一个当前平台的compile函数
     return {
       compile,
       compileToFunctions: createCompileToFunctionFn(compile)
