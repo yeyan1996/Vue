@@ -13,6 +13,7 @@ import { makeMap, no } from 'shared/util'
 import { isNonPhrasingTag } from 'web/compiler/util'
 
 // Regular Expressions for parsing tags and attributes
+//属性的正则
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 // could use https://www.w3.org/TR/1999/REC-xml-names-19990114/#NT-QName
 // but for Vue templates we can enforce a simple charset
@@ -51,6 +52,8 @@ function decodeAttr (value, shouldDecodeNewlines) {
 }
 
 export function parseHTML (html, options) {
+
+  /**通过一个栈的结构来匹配是否正确闭合标签**/
   const stack = []
   const expectHTML = options.expectHTML
   const isUnaryTag = options.isUnaryTag || no
@@ -63,19 +66,22 @@ export function parseHTML (html, options) {
     if (!lastTag || !isPlainTextElement(lastTag)) {
       let textEnd = html.indexOf('<')
       if (textEnd === 0) {
-        // Comment:
+        // Comment:注释节点
         if (comment.test(html)) {
           const commentEnd = html.indexOf('-->')
 
           if (commentEnd >= 0) {
+            //根据传入的配置项选择是否保留注释节点
             if (options.shouldKeepComment) {
               options.comment(html.substring(4, commentEnd))
             }
+            //跳过注释节点将template字符串向后移动3位('-->')继续解析后面的字符串
             advance(commentEnd + 3)
             continue
           }
         }
 
+        //判断浏览器环境的注释<!--[if !IE]>-->
         // http://en.wikipedia.org/wiki/Conditional_comment#Downlevel-revealed_conditional_comment
         if (conditionalComment.test(html)) {
           const conditionalEnd = html.indexOf(']>')
@@ -94,6 +100,7 @@ export function parseHTML (html, options) {
         }
 
         // End tag:
+        //匹配结束标签
         const endTagMatch = html.match(endTag)
         if (endTagMatch) {
           const curIndex = index
@@ -103,6 +110,7 @@ export function parseHTML (html, options) {
         }
 
         // Start tag:
+        //startTagMatch返回一个开始标签的所有属性和起止点的对象
         const startTagMatch = parseStartTag()
         if (startTagMatch) {
           handleStartTag(startTagMatch)
@@ -112,7 +120,7 @@ export function parseHTML (html, options) {
           continue
         }
       }
-
+      //处理文本节点
       let text, rest, next
       if (textEnd >= 0) {
         rest = html.slice(textEnd)
@@ -176,11 +184,14 @@ export function parseHTML (html, options) {
   // Clean up any remaining tags
   parseEndTag()
 
+  //截断html，index向前移动n位
+  //@see https://ustbhuangyi.github.io/vue-analysis/compile/parse.html#%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B
   function advance (n) {
     index += n
     html = html.substring(n)
   }
 
+  //匹配开始标签
   function parseStartTag () {
     const start = html.match(startTagOpen)
     if (start) {
@@ -191,11 +202,15 @@ export function parseHTML (html, options) {
       }
       advance(start[0].length)
       let end, attr
+      //匹配当前标签的所有属性
       while (!(end = html.match(startTagClose)) && (attr = html.match(attribute))) {
+        //一次前进
         advance(attr[0].length)
+        //将属性放入match.attrs数组中
         match.attrs.push(attr)
       }
       if (end) {
+        //自闭和标签
         match.unarySlash = end[1]
         advance(end[0].length)
         match.end = index
@@ -219,6 +234,7 @@ export function parseHTML (html, options) {
 
     const unary = isUnaryTag(tagName) || !!unarySlash
 
+    //格式化attrs数组，返回一个对象数组
     const l = match.attrs.length
     const attrs = new Array(l)
     for (let i = 0; i < l; i++) {
@@ -238,6 +254,7 @@ export function parseHTML (html, options) {
       lastTag = tagName
     }
 
+    //准备生成AST节点
     if (options.start) {
       options.start(tagName, attrs, unary, match.start, match.end)
     }
@@ -263,6 +280,7 @@ export function parseHTML (html, options) {
 
     if (pos >= 0) {
       // Close all the open elements, up the stack
+      //判断是否正确闭合标签
       for (let i = stack.length - 1; i >= pos; i--) {
         if (process.env.NODE_ENV !== 'production' &&
           (i > pos || !tagName) &&

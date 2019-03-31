@@ -21,6 +21,7 @@ import {
 
 export const onRE = /^@|^v-on:/
 export const dirRE = /^v-|^@|^:/
+//?:代表不在捕获组中显示
 export const forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/
 export const forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
 const stripParensRE = /^\(|\)$/g
@@ -77,6 +78,7 @@ export function parse (
 
   delimiters = options.delimiters
 
+  //AST同样有一个栈的结构
   const stack = []
   const preserveWhitespace = options.preserveWhitespace !== false
   let root
@@ -114,6 +116,7 @@ export function parse (
     shouldDecodeNewlines: options.shouldDecodeNewlines,
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments,
+    //给开始标签生成AST节点，并且放入stack栈中
     start (tag, attrs, unary) {
       // check namespace.
       // inherit parent ns if there is one
@@ -124,12 +127,13 @@ export function parse (
       if (isIE && ns === 'svg') {
         attrs = guardIESVGBug(attrs)
       }
-
+      //初始化一个ast节点，保存在element变量中
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
         element.ns = ns
       }
 
+      //对一些模版字符串禁止的标签做拦截（script标签）
       if (isForbiddenTag(element) && !isServerRendering()) {
         element.forbidden = true
         process.env.NODE_ENV !== 'production' && warn(
@@ -164,6 +168,7 @@ export function parse (
         processElement(element, options)
       }
 
+      //检查根节点（不能含有slot,template,v-for）
       function checkRootConstraints (el) {
         if (process.env.NODE_ENV !== 'production') {
           if (el.tag === 'slot' || el.tag === 'template') {
@@ -201,6 +206,8 @@ export function parse (
           )
         }
       }
+      //如果父的AST节点存在（代表当前是一个子节点），建立父子关系
+      //因为利用了一个栈的结构，所以在栈中栈顶元素的下一个元素始终是当前元素的父节点，很好的确立父子关系
       if (currentParent && !element.forbidden) {
         if (element.elseif || element.else) {
           processIfConditions(element, currentParent)
@@ -213,14 +220,18 @@ export function parse (
           element.parent = currentParent
         }
       }
+      //非自闭和标签
       if (!unary) {
+        //将当前节点赋值给currentParent
         currentParent = element
+        //在栈中推入一个元素，用来检查标签是否正确闭合
         stack.push(element)
       } else {
         closeElement(element)
       }
     },
 
+    //给闭合标签生成AST节点
     end () {
       // remove trailing whitespace
       const element = stack[stack.length - 1]
@@ -229,6 +240,7 @@ export function parse (
         element.children.pop()
       }
       // pop stack
+      //将栈顶元素弹出后，currentParent就等于弹出后的栈的栈顶元素
       stack.length -= 1
       currentParent = stack[stack.length - 1]
       closeElement(element)
@@ -264,8 +276,10 @@ export function parse (
         : preserveWhitespace && children.length ? ' ' : ''
       if (text) {
         let res
+        //res包含了文本节点中{{}}保存的变量
         if (!inVPre && text !== ' ' && (res = parseText(text, delimiters))) {
           children.push({
+            //type2代表含有表达式的文本节点
             type: 2,
             expression: res.expression,
             tokens: res.tokens,
@@ -273,6 +287,7 @@ export function parse (
           })
         } else if (text !== ' ' || !children.length || children[children.length - 1].text !== ' ') {
           children.push({
+            //纯文本节点
             type: 3,
             text
           })
@@ -325,6 +340,7 @@ export function processElement (element: ASTElement, options: CompilerOptions) {
   for (let i = 0; i < transforms.length; i++) {
     element = transforms[i](element, options) || element
   }
+  //对剩余属性的处理
   processAttrs(element)
 }
 
@@ -360,6 +376,8 @@ function processRef (el) {
 
 export function processFor (el: ASTElement) {
   let exp
+  //从element中的attrList数组中删除"v-for"
+  //并且在attrsMap中找到v-for属性对应的值
   if ((exp = getAndRemoveAttr(el, 'v-for'))) {
     const res = parseFor(exp)
     if (res) {
@@ -379,12 +397,18 @@ type ForParseResult = {
   iterator2?: string;
 };
 
+//解析v-for指令
 export function parseFor (exp: string): ?ForParseResult {
+  //当正则不使用g作为标志符的时候，match返回的数组第一个元素是匹配到的字符串，后面的元素依次为所有捕获组
   const inMatch = exp.match(forAliasRE)
   if (!inMatch) return
   const res = {}
+  //eg. v-for="(item,index) in data"
+  //inMatch第三个元素为循环的数据（eg中第一个元素为(item,index) in data字符串，第三个元素为data字符串）
   res.for = inMatch[2].trim()
+  //去除(item,index)的括号
   const alias = inMatch[1].trim().replace(stripParensRE, '')
+  //判断v-for是否是对一个对象的遍历
   const iteratorMatch = alias.match(forIteratorRE)
   if (iteratorMatch) {
     res.alias = alias.replace(forIteratorRE, '').trim()
@@ -399,6 +423,7 @@ export function parseFor (exp: string): ?ForParseResult {
 }
 
 function processIf (el) {
+  //exp是v-if的值
   const exp = getAndRemoveAttr(el, 'v-if')
   if (exp) {
     el.if = exp

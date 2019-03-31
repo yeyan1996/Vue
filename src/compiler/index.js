@@ -14,13 +14,17 @@ export const createCompiler = createCompilerCreator(
   template: string,
   options: CompilerOptions
 ): CompiledResult {
+    //生成AST抽象语法树
   const ast = parse(template.trim(), options)
   if (options.optimize !== false) {
+    //标记静态节点
     optimize(ast, options)
   }
+  //生成render属性和staticRenderFns组成的对象
   const code = generate(ast, options)
   return {
     ast,
+    //render是字符串需要用new Function编译
     render: code.render,
     staticRenderFns: code.staticRenderFns
   }
