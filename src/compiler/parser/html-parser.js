@@ -65,6 +65,7 @@ export function parseHTML (html, options) {
     // Make sure we're not in a plaintext content element like script/style
     if (!lastTag || !isPlainTextElement(lastTag)) {
       let textEnd = html.indexOf('<')
+      //上个">"符号到下个"<"符号之间的间隔是0，代表是一个非文本节点("<ul><li>") ("<ul>abc</ul>")
       if (textEnd === 0) {
         // Comment:注释节点
         if (comment.test(html)) {
@@ -110,9 +111,11 @@ export function parseHTML (html, options) {
         }
 
         // Start tag:
-        //startTagMatch返回一个开始标签的所有属性和起止点的对象
+        //startTagMatch返回一个attrs属性，保存当前开始标签的每个属性match正则后返回的值（数组）组成的二维数组
+        //以及tagName，end/start的位置
         const startTagMatch = parseStartTag()
         if (startTagMatch) {
+          //处理startTagMatch
           handleStartTag(startTagMatch)
           if (shouldIgnoreFirstNewline(startTagMatch.tagName, html)) {
             advance(1)
@@ -120,7 +123,7 @@ export function parseHTML (html, options) {
           continue
         }
       }
-      //处理文本节点
+      //文本节点/有间隔的节点
       let text, rest, next
       if (textEnd >= 0) {
         rest = html.slice(textEnd)
@@ -131,11 +134,13 @@ export function parseHTML (html, options) {
           !conditionalComment.test(rest)
         ) {
           // < in plain text, be forgiving and treat it as text
+          //处理在文本节点中的"<"符号，vue会把他当作一个文本
           next = rest.indexOf('<', 1)
           if (next < 0) break
           textEnd += next
           rest = html.slice(textEnd)
         }
+        //返回正确的文本节点
         text = html.substring(0, textEnd)
         advance(textEnd)
       }
@@ -219,7 +224,7 @@ export function parseHTML (html, options) {
     }
   }
 
-  //继续处理解析后的tag(属性值编码,放入栈)
+  //处理startTagMatch(整理/格式化属性值,放入栈)
   function handleStartTag (match) {
     const tagName = match.tagName
     const unarySlash = match.unarySlash
@@ -240,16 +245,21 @@ export function parseHTML (html, options) {
     const attrs = new Array(l)
     for (let i = 0; i < l; i++) {
       const args = match.attrs[i]
+      //args为标签中某个属性表达式match正则返回的数组
+      //args[0]是整个表达式exp，args[1]为属性,args[2]为等号符号
+      //args[3]保存着当前属性的值（没有就依次往后推移）
+
       const value = args[3] || args[4] || args[5] || ''
       const shouldDecodeNewlines = tagName === 'a' && args[1] === 'href'
         ? options.shouldDecodeNewlinesForHref
         : options.shouldDecodeNewlines
+      //将属性和值作为对象保存在attrs数组中用来之后创建当前节点的AST对象
       attrs[i] = {
         name: args[1],
         value: decodeAttr(value, shouldDecodeNewlines)
       }
     }
-
+    //推入栈作为起始标签
     if (!unary) {
       stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs })
       lastTag = tagName

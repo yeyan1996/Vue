@@ -217,6 +217,7 @@ export function parse (
           const name = element.slotTarget || '"default"'
           ;(currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element
         } else {
+          //给父节点的children属性push当前节点
           currentParent.children.push(element)
           element.parent = currentParent
         }
@@ -342,7 +343,7 @@ export function processElement (element: ASTElement, options: CompilerOptions) {
   for (let i = 0; i < transforms.length; i++) {
     element = transforms[i](element, options) || element
   }
-  //对剩余属性的处理
+  //对剩余属性的处理(监听事件)
   processAttrs(element)
 }
 
@@ -383,6 +384,7 @@ export function processFor (el: ASTElement) {
   if ((exp = getAndRemoveAttr(el, 'v-for'))) {
     const res = parseFor(exp)
     if (res) {
+      //给AST对象扩展循环的属性(alias,for)
       extend(el, res)
     } else if (process.env.NODE_ENV !== 'production') {
       warn(
@@ -407,9 +409,9 @@ export function parseFor (exp: string): ?ForParseResult {
   if (!inMatch) return
   const res = {}
   //eg. v-for="(item,index) in data"
-  //inMatch第三个元素为循环的数据（eg中第一个元素为(item,index) in data字符串，第三个元素为data字符串）
+  //res.for即inMatch第三个元素为循环的数据（eg中第一个元素为(item,index) in data字符串，第三个元素为data字符串）
   res.for = inMatch[2].trim()
-  //去除(item,index)的括号
+  //去除(item,index)的括号，返回"item,index"
   const alias = inMatch[1].trim().replace(stripParensRE, '')
   //判断v-for是否是对一个对象的遍历
   const iteratorMatch = alias.match(forIteratorRE)
@@ -420,8 +422,10 @@ export function parseFor (exp: string): ?ForParseResult {
       res.iterator2 = iteratorMatch[2].trim()
     }
   } else {
+    //循环变量
     res.alias = alias
   }
+  //返回v-for循环变量和循环数据
   return res
 }
 
@@ -559,6 +563,7 @@ function processAttrs (el) {
   for (i = 0, l = list.length; i < l; i++) {
     name = rawName = list[i].name
     value = list[i].value
+    //是否是v-on/@/:
     if (dirRE.test(name)) {
       // mark element as dynamic
       el.hasBindings = true
@@ -605,6 +610,7 @@ function processAttrs (el) {
         }
       } else if (onRE.test(name)) { // v-on
         name = name.replace(onRE, '')
+        //处理监听事件（原生/组件），给AST添加event对象保存事件
         addHandler(el, name, value, modifiers, false, warn)
       } else { // normal directives
         name = name.replace(dirRE, '')
