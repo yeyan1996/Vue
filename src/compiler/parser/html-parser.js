@@ -191,7 +191,7 @@ export function parseHTML (html, options) {
     html = html.substring(n)
   }
 
-  //匹配开始标签
+  //匹配开始标签,将开始标签的所有属性放入match数组
   function parseStartTag () {
     const start = html.match(startTagOpen)
     if (start) {
@@ -219,6 +219,7 @@ export function parseHTML (html, options) {
     }
   }
 
+  //继续处理解析后的tag(属性值编码,放入栈)
   function handleStartTag (match) {
     const tagName = match.tagName
     const unarySlash = match.unarySlash

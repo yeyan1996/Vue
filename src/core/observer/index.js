@@ -165,6 +165,8 @@ export function defineReactive (
   const getter = property && property.get
   const setter = property && property.set
   //如果没有原生的getter,setter，获取这个对象属性的值
+
+
   if ((!getter || setter) && arguments.length === 2) {
     val = obj[key]
   }

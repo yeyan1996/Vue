@@ -114,7 +114,8 @@ function initProps (vm: Component, propsOptions: Object) {
 
 function initData (vm: Component) {
   let data = vm.$options.data
-  //判断是否为函数(即非根实例,组件实例)
+  //判断是否为函数(即非根实例,组件实例),若是函数,则执行data函数得到返回的对象
+  //此时_data属性才会有数据
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)
     : data || {}
@@ -162,10 +163,9 @@ function initData (vm: Component) {
 
 export function getData (data: Function, vm: Component): any {
   // #7573 disable dep collection when invoking data getters
-  // Todo 响应式
   pushTarget()
   try {
-    // 执行data上下文为这个vue实例
+    /**这个时候会对data中的所有数据进行求值,并且传入当前的vm实例作为this的值,随后才将返回的对象赋值给vm._data属性**/
     return data.call(vm, vm)
   } catch (e) {
     handleError(e, vm, `data()`)

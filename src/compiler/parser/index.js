@@ -145,6 +145,7 @@ export function parse (
 
       // apply pre-transforms
       for (let i = 0; i < preTransforms.length; i++) {
+        //web平台会对v-model指令做一些处理
         element = preTransforms[i](element, options) || element
       }
 
@@ -337,6 +338,7 @@ export function processElement (element: ASTElement, options: CompilerOptions) {
   processRef(element)
   processSlot(element)
   processComponent(element)
+  //处理节点静态/动态的class,style属性
   for (let i = 0; i < transforms.length; i++) {
     element = transforms[i](element, options) || element
   }
@@ -400,6 +402,7 @@ type ForParseResult = {
 //解析v-for指令
 export function parseFor (exp: string): ?ForParseResult {
   //当正则不使用g作为标志符的时候，match返回的数组第一个元素是匹配到的字符串，后面的元素依次为所有捕获组
+  //和RegExp.prototype.exec返回的数组相同
   const inMatch = exp.match(forAliasRE)
   if (!inMatch) return
   const res = {}
@@ -422,11 +425,14 @@ export function parseFor (exp: string): ?ForParseResult {
   return res
 }
 
+//处理v-if指令,el为AST对象
+//给AST对象添加if(Boolean)/ifCondition(Array)属性
 function processIf (el) {
   //exp是v-if的值
   const exp = getAndRemoveAttr(el, 'v-if')
   if (exp) {
     el.if = exp
+    //给当前节点的AST对象添加ifCondition属性
     addIfCondition(el, {
       exp: exp,
       block: el
