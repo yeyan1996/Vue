@@ -123,10 +123,12 @@ export function parseHTML (html, options) {
           continue
         }
       }
-      //文本节点/有间隔的节点
+      //获取2个节点之间的间隔(文本节点/换行符)
       let text, rest, next
+      //如果没有间隔("<ul><li>.......")
       if (textEnd >= 0) {
         rest = html.slice(textEnd)
+        //判断rest是否是一个标签作为开头(而不是文本节点中含有"<"字符串)
         while (
           !endTag.test(rest) &&
           !startTagOpen.test(rest) &&
@@ -134,7 +136,7 @@ export function parseHTML (html, options) {
           !conditionalComment.test(rest)
         ) {
           // < in plain text, be forgiving and treat it as text
-          //处理在文本节点中的"<"符号，vue会把他当作一个文本
+          //处理在文本节点中的"<"符号，vue会把他当作一个文本继续往前选择文本节点
           next = rest.indexOf('<', 1)
           if (next < 0) break
           textEnd += next
@@ -149,7 +151,7 @@ export function parseHTML (html, options) {
         text = html
         html = ''
       }
-
+      //处理文本节点
       if (options.chars && text) {
         options.chars(text)
       }
@@ -230,10 +232,14 @@ export function parseHTML (html, options) {
     const unarySlash = match.unarySlash
 
     if (expectHTML) {
+      //p标签内不能放入的元素(p标签里不能放div元素,header,body,.........)
       if (lastTag === 'p' && isNonPhrasingTag(tagName)) {
+        //直接闭合p标签(最后会多一个</p>,但parseEndTag对特殊的闭合标签做了处理使得能够正确闭合)
         parseEndTag(lastTag)
       }
+      //允许只有一个开始标签的标签
       if (canBeLeftOpenTag(tagName) && lastTag === tagName) {
+        //手动生成一个闭合标签
         parseEndTag(tagName)
       }
     }
@@ -279,6 +285,7 @@ export function parseHTML (html, options) {
     // Find the closest opened tag of the same type
     if (tagName) {
       lowerCasedTagName = tagName.toLowerCase()
+      //将这个闭合标签匹配栈顶的元素
       for (pos = stack.length - 1; pos >= 0; pos--) {
         if (stack[pos].lowerCasedTag === lowerCasedTagName) {
           break
@@ -314,6 +321,7 @@ export function parseHTML (html, options) {
         options.start(tagName, [], true, start, end)
       }
     } else if (lowerCasedTagName === 'p') {
+      //手动创建一个开始标签闭合这个p标签
       if (options.start) {
         options.start(tagName, [], false, start, end)
       }

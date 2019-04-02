@@ -42,6 +42,7 @@ export function parseText (
     // tag token
     //解析filter
     const exp = parseFilters(match[1].trim())
+    //放入一个变量转换的词法单元
     tokens.push(`_s(${exp})`)
     rawTokens.push({ '@binding': exp })
     lastIndex = index + match[0].length

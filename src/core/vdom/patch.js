@@ -30,7 +30,7 @@ import {
 
 export const emptyNode = new VNode('', {}, [])
 
-//这些vdom钩子会在不同时期给vdom添加class,事件,或者dom属性
+//这些vnode钩子会在不同时期给vdom添加class,事件,或者dom属性(和组件vnode钩子不同)
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
 //满足以下条件会被认为是相同的节点
@@ -514,10 +514,14 @@ export function createPatchFunction (backend) {
         newStartVnode = newCh[++newStartIdx]
       }
     }
+    //旧节点遍历完,而新节点还有
+    //则将新节点没有遍历完的节点插入旧节点数组的最后
     if (oldStartIdx > oldEndIdx) {
       refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm
       addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue)
     } else if (newStartIdx > newEndIdx) {
+      //新节点遍历完,而旧节点还有
+      //则将旧节点没有遍历完的删除
       removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx)
     }
   }

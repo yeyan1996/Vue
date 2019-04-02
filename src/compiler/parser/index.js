@@ -133,7 +133,7 @@ export function parse (
         element.ns = ns
       }
 
-      //对一些模版字符串禁止的标签做拦截（script标签）
+      //对一些模版字符串禁止的标签做拦截（script标签）防止XSS攻击
       if (isForbiddenTag(element) && !isServerRendering()) {
         element.forbidden = true
         process.env.NODE_ENV !== 'production' && warn(
@@ -233,7 +233,7 @@ export function parse (
       }
     },
 
-    //给闭合标签生成AST节点
+    //给AST的栈弹出开始标签
     end () {
       // remove trailing whitespace
       const element = stack[stack.length - 1]
@@ -247,7 +247,7 @@ export function parse (
       currentParent = stack[stack.length - 1]
       closeElement(element)
     },
-
+    //处理文本节点
     chars (text: string) {
       if (!currentParent) {
         if (process.env.NODE_ENV !== 'production') {
@@ -276,13 +276,15 @@ export function parse (
         ? isTextTag(currentParent) ? text : decodeHTMLCached(text)
         // only preserve whitespace if its not right after a starting tag
         : preserveWhitespace && children.length ? ' ' : ''
+      //处理有内容的文本节点
       if (text) {
         let res
-        //res包含了文本节点中{{}}保存的变量
+        //res包含了文本节点中{{}}保存的变量和其余的文本组成的词法单元表达式exp("_s(<prop>)")和描述token的对象(@binding)
         if (!inVPre && text !== ' ' && (res = parseText(text, delimiters))) {
           children.push({
-            //type2代表含有表达式的文本节点
+            //type = 2代表含有表达式的文本节点
             type: 2,
+            //exp是一个给new Function执行的代码片段字符串
             expression: res.expression,
             tokens: res.tokens,
             text
