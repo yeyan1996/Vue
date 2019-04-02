@@ -438,7 +438,7 @@ function processIf (el) {
   const exp = getAndRemoveAttr(el, 'v-if')
   if (exp) {
     el.if = exp
-    //给当前节点的AST对象添加ifCondition属性
+    //给当前节点的AST对象添加ifCondition属性,是一个数组，代表v-if的条件（可能是多元表达式所以是个数组）
     addIfCondition(el, {
       exp: exp,
       block: el

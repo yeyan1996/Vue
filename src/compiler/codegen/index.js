@@ -51,6 +51,7 @@ export function generate (
   }
 }
 
+//生成准备执行的代码字符串
 export function genElement (el: ASTElement, state: CodegenState): string {
   if (el.parent) {
     el.pre = el.pre || el.parent.pre
@@ -76,9 +77,10 @@ export function genElement (el: ASTElement, state: CodegenState): string {
     } else {
       let data
       if (!el.plain || (el.pre && state.maybeComponent(el))) {
+        //生成createElement第二个data对象
         data = genData(el, state)
       }
-
+      //生成createElement第三个children数组
       const children = el.inlineTemplate ? null : genChildren(el, state, true)
       code = `_c('${el.tag}'${
         data ? `,${data}` : '' // data
@@ -163,8 +165,10 @@ function genIfConditions (
   const condition = conditions.shift()
   if (condition.exp) {
     return `(${condition.exp})?${
+      //继续执行genElement生成后续代码
       genTernaryExp(condition.block)
     }:${
+      //递归调用(可能含有多个表达式)计算出最终的条件语句
       genIfConditions(conditions, state, altGen, altEmpty)
     }`
   } else {
@@ -177,6 +181,7 @@ function genIfConditions (
       ? altGen(el, state)
       : el.once
         ? genOnce(el, state)
+        //继续遍历AST生成代码
         : genElement(el, state)
   }
 }
@@ -192,6 +197,7 @@ export function genFor (
   const iterator1 = el.iterator1 ? `,${el.iterator1}` : ''
   const iterator2 = el.iterator2 ? `,${el.iterator2}` : ''
 
+  //在使用v-for循环一个组件的时候没有设置key会报警告
   if (process.env.NODE_ENV !== 'production' &&
     state.maybeComponent(el) &&
     el.tag !== 'slot' &&
@@ -207,6 +213,9 @@ export function genFor (
   }
 
   el.forProcessed = true // avoid recursion
+
+  //_l辅助函数定义在src/core/instance/render-helpers/render-list.js:8
+  //返回的格式为`_l(<exp>,function(<alias,iterator,iterator2>){return <AST>>}))`
   return `${altHelper || '_l'}((${exp}),` +
     `function(${alias}${iterator1}${iterator2}){` +
       `return ${(altGen || genElement)(el, state)}` +
@@ -241,6 +250,8 @@ export function genData (el: ASTElement, state: CodegenState): string {
     data += `tag:"${el.tag}",`
   }
   // module data generation functions
+  //平台的一些属性函数
+  //web环境下会添加class和staticClass
   for (let i = 0; i < state.dataGenFns.length; i++) {
     data += state.dataGenFns[i](el)
   }
@@ -253,6 +264,7 @@ export function genData (el: ASTElement, state: CodegenState): string {
     data += `domProps:{${genProps(el.props)}},`
   }
   // event handlers
+  //添加on和nativeOn
   if (el.events) {
     data += `${genHandlers(el.events, false)},`
   }
@@ -401,6 +413,7 @@ export function genChildren (
   if (children.length) {
     const el: any = children[0]
     // optimize single v-for
+    //当当前AST节点的children只有一个v-for的子节点时，优化v-for循环
     if (children.length === 1 &&
       el.for &&
       el.tag !== 'template' &&
@@ -458,6 +471,7 @@ function genNode (node: ASTNode, state: CodegenState): string {
   } else if (node.type === 3 && node.isComment) {
     return genComment(node)
   } else {
+    //一般为type = 2的文本表达式
     return genText(node)
   }
 }
