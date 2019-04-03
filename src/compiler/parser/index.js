@@ -568,10 +568,13 @@ function processAttrs (el) {
     //是否是v-on/@/:
     if (dirRE.test(name)) {
       // mark element as dynamic
+      //标志是一个动态的AST节点
       el.hasBindings = true
       // modifiers
+      //解析修饰符
       modifiers = parseModifiers(name)
       if (modifiers) {
+        //去除修饰符
         name = name.replace(modifierRE, '')
       }
       if (bindRE.test(name)) { // v-bind
@@ -666,6 +669,7 @@ function checkInFor (el: ASTElement): boolean {
 function parseModifiers (name: string): Object | void {
   const match = name.match(modifierRE)
   if (match) {
+    //声明一个对象保存所有的修饰符
     const ret = {}
     match.forEach(m => { ret[m.slice(1)] = true })
     return ret

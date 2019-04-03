@@ -44,6 +44,7 @@ export function addDirective (
   el.plain = false
 }
 
+//添加事件
 export function addHandler (
   el: ASTElement,
   name: string,
@@ -77,6 +78,8 @@ export function addHandler (
     }
   }
 
+  //根据修饰符给事件添加不同的修饰符简写
+
   // check capture modifier
   if (modifiers.capture) {
     delete modifiers.capture
@@ -108,11 +111,14 @@ export function addHandler (
     newHandler.modifiers = modifiers
   }
 
+  //第一次handlers为undefined(因为可能会给同一事件添加多个回调)
   const handlers = events[name]
   /* istanbul ignore if */
+  //当一个事件回调时为newHandler对象,同一事件多个回调时为一个newHandler数组
   if (Array.isArray(handlers)) {
     important ? handlers.unshift(newHandler) : handlers.push(newHandler)
   } else if (handlers) {
+    //通过important决定事件的执行顺序
     events[name] = important ? [newHandler, handlers] : [handlers, newHandler]
   } else {
     events[name] = newHandler

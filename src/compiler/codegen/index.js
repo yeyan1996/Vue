@@ -51,6 +51,7 @@ export function generate (
   }
 }
 
+//辅助函数简写src/core/instance/render-helpers/index.js:14
 //生成准备执行的代码字符串
 export function genElement (el: ASTElement, state: CodegenState): string {
   if (el.parent) {
@@ -159,6 +160,7 @@ function genIfConditions (
   altEmpty?: string
 ): string {
   if (!conditions.length) {
+    //在v-if="false"的时候会生成一个空vnode节点_e()
     return altEmpty || '_e()'
   }
 
@@ -213,6 +215,7 @@ export function genFor (
   }
 
   el.forProcessed = true // avoid recursion
+
 
   //_l辅助函数定义在src/core/instance/render-helpers/render-list.js:8
   //返回的格式为`_l(<exp>,function(<alias,iterator,iterator2>){return <AST>>}))`
@@ -476,7 +479,9 @@ function genNode (node: ASTNode, state: CodegenState): string {
   }
 }
 
+//生成文本表达式代码
 export function genText (text: ASTText | ASTExpression): string {
+  //_v表示创建一个文本节点
   return `_v(${text.type === 2
     ? text.expression // no need for () because already wrapped in _s()
     : transformSpecialNewlines(JSON.stringify(text.text))

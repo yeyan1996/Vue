@@ -29,6 +29,7 @@ export function setActiveInstance(vm: Component) {
   }
 }
 
+//初始化当前组件的生命周期钩子和属性,并且将当前组件添加到父组件的children数组中
 export function initLifecycle (vm: Component) {
   //子组件的vm实例
   const options = vm.$options

@@ -88,13 +88,17 @@ function genHandler (
     return 'function(){}'
   }
 
+  //如果是个数组(同一事件多个事件回调),则遍历每个事件回调执行genHandler
   if (Array.isArray(handler)) {
     return `[${handler.map(handler => genHandler(name, handler)).join(',')}]`
   }
 
+  //匹配abc/a.b/a["b"]/a['b'],一般书写的函数名都会匹配成功,但不匹配函数调用abc($event)
   const isMethodPath = simplePathRE.test(handler.value)
+  //匹配function(){...} / ()=>{....}等的函数表达式
   const isFunctionExpression = fnExpRE.test(handler.value)
 
+  //没有事件修饰符的情况
   if (!handler.modifiers) {
     if (isMethodPath || isFunctionExpression) {
       return handler.value
@@ -103,8 +107,11 @@ function genHandler (
     if (__WEEX__ && handler.params) {
       return genWeexHandler(handler.params, handler.value)
     }
+    //如果不是一个函数表达式或者不是一个函数名(eg. @click="abc($event)"),则用下面的函数包裹它
     return `function($event){${handler.value}}` // inline statement
   } else {
+    //含有事件修饰符的情况
+
     let code = ''
     let genModifierCode = ''
     const keys = []
@@ -113,6 +120,7 @@ function genHandler (
         //如果在modifierCode中能找到相应的值(例如prevent:'$event.preventDefault();'),则会拼接字符串
         genModifierCode += modifierCode[key]
         // left/right
+        //添加键盘按键的键码
         if (keyCodes[key]) {
           keys.push(key)
         }
