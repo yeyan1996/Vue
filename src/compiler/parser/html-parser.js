@@ -51,6 +51,7 @@ function decodeAttr (value, shouldDecodeNewlines) {
   return value.replace(re, match => decodingMap[match])
 }
 
+//HTML解析器
 export function parseHTML (html, options) {
 
   /**通过一个栈的结构来匹配是否正确闭合标签**/
@@ -63,16 +64,25 @@ export function parseHTML (html, options) {
   while (html) {
     last = html
     // Make sure we're not in a plaintext content element like script/style
+    //父元素不能是一个纯文本内容（script/style/textarea）
     if (!lastTag || !isPlainTextElement(lastTag)) {
+      //textEnd会匹配"<"符号的位置
       let textEnd = html.indexOf('<')
+      /**模版只有4种情况
+       * 1：开始标签（"<"开头）
+       * 2：闭合标签（"<"开头）
+       * 3：文本节点（非"<"开头，或者含有"<"开头但是不符合开始/闭合的正则匹配的文本）
+       * 4：注释/文档/环境注释节点（"<"开头）
+       * **/
       //上个">"符号到下个"<"符号之间的间隔是0，代表是一个非文本节点("<ul><li>") ("<ul>abc</ul>")
+      //有可能是一个含有"<"的文本节点，也会执行下面逻辑，但不会进入任何一个钩子，会继续执行到处理文本节点的逻辑
       if (textEnd === 0) {
-        // Comment:注释节点
+        // 注释节点（<!-- abc>）
         if (comment.test(html)) {
           const commentEnd = html.indexOf('-->')
 
           if (commentEnd >= 0) {
-            //根据传入的配置项选择是否保留注释节点
+            //根据传入的配置项选择是否保留注释节点（执行注释节点的钩子）
             if (options.shouldKeepComment) {
               options.comment(html.substring(4, commentEnd))
             }
@@ -82,7 +92,7 @@ export function parseHTML (html, options) {
           }
         }
 
-        //判断浏览器环境的注释<!--[if !IE]>-->
+        //判断浏览器环境的注释(<!--[if !IE]>-->)不会执行任何钩子，保留
         // http://en.wikipedia.org/wiki/Conditional_comment#Downlevel-revealed_conditional_comment
         if (conditionalComment.test(html)) {
           const conditionalEnd = html.indexOf(']>')
@@ -93,7 +103,7 @@ export function parseHTML (html, options) {
           }
         }
 
-        // Doctype:
+        // 文档
         const doctypeMatch = html.match(doctype)
         if (doctypeMatch) {
           advance(doctypeMatch[0].length)
@@ -123,10 +133,12 @@ export function parseHTML (html, options) {
           continue
         }
       }
-      //获取2个节点之间的间隔(文本节点/换行符)
+
       let text, rest, next
-      //如果没有间隔("<ul><li>.......")
+
+      //文本节点/换行符
       if (textEnd >= 0) {
+        //rest为下个"<"符号到结束的模版字符串
         rest = html.slice(textEnd)
         //判断rest是否是一个标签作为开头(而不是文本节点中含有"<"字符串)
         while (
@@ -140,9 +152,10 @@ export function parseHTML (html, options) {
           next = rest.indexOf('<', 1)
           if (next < 0) break
           textEnd += next
+          //继续搜索是否有下一个文本节点的"<"
           rest = html.slice(textEnd)
         }
-        //返回正确的文本节点
+        //返回正确的完整的文本节点
         text = html.substring(0, textEnd)
         advance(textEnd)
       }
@@ -151,7 +164,7 @@ export function parseHTML (html, options) {
         text = html
         html = ''
       }
-      //处理文本节点
+      //处理文本节点（执行文本节点的钩子）
       if (options.chars && text) {
         options.chars(text)
       }
@@ -210,14 +223,14 @@ export function parseHTML (html, options) {
       advance(start[0].length)
       let end, attr
       //匹配当前标签的所有属性
-      while (!(end = html.match(startTagClose)) && (attr = html.match(attribute))) {
-        //一次前进
+      while (/*尝试匹配">"并赋值给end*/!(end = html.match(startTagClose)) && (attr = html.match(attribute))) {
+        //依次前进
         advance(attr[0].length)
         //将属性放入match.attrs数组中
         match.attrs.push(attr)
       }
       if (end) {
-        //自闭和标签
+        //如果是自闭合标签unarySlash属性为"/"（捕获组捕获到"/"）
         match.unarySlash = end[1]
         advance(end[0].length)
         match.end = index
@@ -271,7 +284,7 @@ export function parseHTML (html, options) {
       lastTag = tagName
     }
 
-    //准备生成AST节点
+    //执行开始标签的钩子，生成AST节点
     if (options.start) {
       options.start(tagName, attrs, unary, match.start, match.end)
     }
@@ -308,6 +321,7 @@ export function parseHTML (html, options) {
             `tag <${stack[i].tag}> has no matching end tag.`
           )
         }
+        //执行闭合标签的钩子函数，建立父子关系
         if (options.end) {
           options.end(stack[i].tag, start, end)
         }

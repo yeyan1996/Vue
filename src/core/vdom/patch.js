@@ -31,6 +31,7 @@ import {
 export const emptyNode = new VNode('', {}, [])
 
 //这些vnode钩子会在不同时期给vdom添加class,事件,或者dom属性(和组件vnode钩子不同)
+//web平台的钩子函数定义在src/platforms/web/runtime/modules下
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
 //满足以下条件会被认为是相同的节点
@@ -76,10 +77,11 @@ export function createPatchFunction (backend) {
   const cbs = {}
 
   //backend会针对不同平台返回不同的值
-  //modules(src/platforms/web/runtime/modules/index.js:8)
   const { modules, nodeOps } = backend
 
+
   for (i = 0; i < hooks.length; ++i) {
+    //cbs保存着所有生命周期的所有回调（35），每个生命周期对应的是一个回调数组
     cbs[hooks[i]] = []
     for (j = 0; j < modules.length; ++j) {
       if (isDef(modules[j][hooks[i]])) {

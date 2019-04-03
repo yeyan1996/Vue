@@ -116,6 +116,7 @@ export function parse (
     shouldDecodeNewlines: options.shouldDecodeNewlines,
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments,
+    //开始标签的钩子
     //给开始标签生成AST节点，并且放入stack栈中
     start (tag, attrs, unary) {
       // check namespace.
@@ -233,6 +234,7 @@ export function parse (
       }
     },
 
+    //闭合标签的钩子
     //给AST的栈弹出开始标签
     end () {
       // remove trailing whitespace
@@ -247,7 +249,8 @@ export function parse (
       currentParent = stack[stack.length - 1]
       closeElement(element)
     },
-    //处理文本节点
+
+    //文本节点的钩子，处理文本节点
     chars (text: string) {
       if (!currentParent) {
         if (process.env.NODE_ENV !== 'production') {
@@ -298,6 +301,8 @@ export function parse (
         }
       }
     },
+
+    //注释节点的钩子
     comment (text: string) {
       currentParent.children.push({
         type: 3,
