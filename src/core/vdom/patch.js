@@ -520,10 +520,11 @@ export function createPatchFunction (backend) {
     //则将新节点没有遍历完的节点插入旧节点数组的最后
     if (oldStartIdx > oldEndIdx) {
       refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm
+      //批量调用createElm将vnode节点变成真实DOM添加到DOM列表中
       addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue)
     } else if (newStartIdx > newEndIdx) {
       //新节点遍历完,而旧节点还有
-      //则将旧节点没有遍历完的删除
+      //则删除旧节点多余的真实DOM节点
       removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx)
     }
   }
@@ -552,6 +553,7 @@ export function createPatchFunction (backend) {
       if (isDef(c) && sameVnode(node, c)) return i
     }
   }
+
   //更新新的vnode节点
   function patchVnode (
     oldVnode,
@@ -599,13 +601,12 @@ export function createPatchFunction (backend) {
 
     let i
     const data = vnode.data
-    //组件vnode会满足这个条件
+    //如果是组件vnode,执行组件vnode的hook中的prepatch钩子,更新子组件引用到的一些props和事件(src/core/vdom/create-component.js:61)
     if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
-      //执行prepatch钩子,更新子组件引用到的一些props和事件(src/core/vdom/create-component.js:61)
-      /**因为props改变了所以会触发子组件的重新渲染**/
+      /**prepatch钩子内会改变props,同时触发子组件的渲染watcher进行重新渲染**/
       i(oldVnode, vnode)
     }
-  //不是一个组件(组件没有children)
+     //如果是组件,则children属性为空数组
     const oldCh = oldVnode.children
     const ch = vnode.children
     if (isDef(data) && isPatchable(vnode)) {
@@ -784,7 +785,7 @@ export function createPatchFunction (backend) {
       /**创建组件节点**/
       createElm(vnode, insertedVnodeQueue)
     } else {
-      //否则为组件树更新
+      /**否则为组件树更新**/
       const isRealElement = isDef(oldVnode.nodeType)
       //不是一个真实的dom节点且是一个相似节点,会进行diff算法逐层比对
       //相似节点:最外层的vnode(不包括children)相同
