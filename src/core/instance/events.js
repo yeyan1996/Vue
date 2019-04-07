@@ -41,14 +41,15 @@ function createOnceHandler (event, fn) {
   }
 }
 
-/**自定义事件和原生事件的区别在于add/remove方法不同**/
-//原生DOM事件的add方法（src/platforms/web/runtime/modules/events.js:42）
+
 export function updateComponentListeners (
   vm: Component,
   listeners: Object,
   oldListeners: ?Object
 ) {
   target = vm
+  /**自定义事件和原生DOM都会调用updateListeners,区别在于add/remove方法不同**/
+  //原生DOM事件的add方法（src/platforms/web/runtime/modules/events.js:42）
   updateListeners(listeners, oldListeners || {}, add, remove, createOnceHandler, vm)
   target = undefined
 }
@@ -62,6 +63,8 @@ export function eventsMixin (Vue: Class<Component>) {
         vm.$on(event[i], fn)
       }
     } else {
+      /***events对象为父组件占位符vnode中_parentListeners属性（18）*/
+      //events对象包含了所有事件和事件回调（发布订阅模式）
       (vm._events[event] || (vm._events[event] = [])).push(fn)
       // optimize hook:event cost by using a boolean flag marked at registration
       // instead of a hash lookup
@@ -102,6 +105,7 @@ export function eventsMixin (Vue: Class<Component>) {
     if (!cbs) {
       return vm
     }
+    //销毁所有目标事件的回调函数
     if (!fn) {
       vm._events[event] = null
       return vm
@@ -133,6 +137,7 @@ export function eventsMixin (Vue: Class<Component>) {
         )
       }
     }
+    //从事件中心events中拿到对应事件的回调数组，依次触发事件回调
     let cbs = vm._events[event]
     if (cbs) {
       cbs = cbs.length > 1 ? toArray(cbs) : cbs

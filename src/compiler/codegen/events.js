@@ -107,7 +107,8 @@ function genHandler (
     if (__WEEX__ && handler.params) {
       return genWeexHandler(handler.params, handler.value)
     }
-    //如果不是一个函数表达式或者不是一个函数名(eg. @click="abc($event)"),则用下面的函数包裹它
+    //如果不是一个函数名或者不是一个函数表达式,则用下面的函数包裹它
+    //eg. @click="abc($event)"
     return `function($event){${handler.value}}` // inline statement
   } else {
     //含有事件修饰符的情况

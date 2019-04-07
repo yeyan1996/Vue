@@ -34,7 +34,7 @@ import {
 
 // inline hooks to be invoked on component VNodes during patch
 //执行installComponentHooks(253)函数的时候会用到这个对象
-//声明了组件vnode的钩子
+//声明了组件vnode的生命周期钩子
 const componentVNodeHooks = {
   //init钩子会创建子组件实例
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {

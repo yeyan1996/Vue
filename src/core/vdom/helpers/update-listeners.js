@@ -32,13 +32,14 @@ const normalizeEvent = cached((name: string): {
 })
 
 export function createFnInvoker (fns: Function | Array<Function>): Function {
-  //这个函数是真正的事件处理程序
+  //这个函数是真正的事件处理程序(addEventLister会给handler回调自动传入一个event的事件对象，即invoker函数会自动获得一个event的事件对象)
   function invoker () {
     const fns = invoker.fns
       //如果是数组(对同一个事件绑定多个事件处理程序)
     if (Array.isArray(fns)) {
       const cloned = fns.slice()
       for (let i = 0; i < cloned.length; i++) {
+        //arguments即event事件对象
         cloned[i].apply(null, arguments)
       }
     } else {
@@ -47,11 +48,12 @@ export function createFnInvoker (fns: Function | Array<Function>): Function {
       return fns.apply(null, arguments)
     }
   }
+  //给invoker函数的fns属性添加所有的事件，这样做是因为在vdom更新的时候方便将新的fns替换为旧的fns
   invoker.fns = fns
   return invoker
 }
 
-//更新自定义事件和DOM原生事件
+//创建/更新自定义事件和DOM原生事件
 export function updateListeners (
   on: Object,
   oldOn: Object,
@@ -64,7 +66,7 @@ export function updateListeners (
   for (name in on) {
     def = cur = on[name]
     old = oldOn[name]
-    //解析修饰符(~,&,!之类的符号(在编译阶段会将capture等修饰符换成符号))
+    //解析修饰符(~,&,!之类的符号(在编译阶段会将capture等部分修饰符换成符号))
     event = normalizeEvent(name)
     /* istanbul ignore if */
     if (__WEEX__ && isPlainObject(def)) {

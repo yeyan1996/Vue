@@ -336,7 +336,7 @@ export function createPatchFunction (backend) {
 
   function invokeCreateHooks (vnode, insertedVnodeQueue) {
     for (let i = 0; i < cbs.create.length; ++i) {
-      //执行模块的create钩子(74),会挂载监听事件
+      //执行模块的create钩子(74),会挂载监听事件,最终会执行updateListeners
       //对于事件的初始化来说create和update功能都相同,但create的第一个参数是一个空的vnode节点,而update是旧的vnode节点
       cbs.create[i](emptyNode, vnode)
     }

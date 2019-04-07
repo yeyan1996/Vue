@@ -321,6 +321,8 @@ function genDirectives (el: ASTElement, state: CodegenState): string | void {
   for (i = 0, l = dirs.length; i < l; i++) {
     dir = dirs[i]
     needRuntime = true
+    //state.directives和平台相关，web平台路径为src/platforms/web/compiler/directives/index.js:5
+    //如果含有v-model指令，则gen为上述地址的model函数
     const gen: DirectiveFunction = state.directives[dir.name]
     if (gen) {
       // compile-time directive that manipulates AST.

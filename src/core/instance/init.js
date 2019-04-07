@@ -35,8 +35,7 @@ export function initMixin (Vue: Class<Component>) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
-      // 合并组件的options
-      // 组件合并时更快，因为在初始化组件的构造函数,即执行Vue.extend函数时已经定义了options属性(src/core/global-api/extend.js:44)
+      // 初始化组件的options（包括将父组件的占位符节点监听的事件赋值给当前组件）
       initInternalComponent(vm, options)
     } else {
       //如果不是一个组件，即main.js声明的根实例，则合并传入构造函数的参数到$options（合并配置）
@@ -88,19 +87,20 @@ export function initMixin (Vue: Class<Component>) {
 
 //组件的初始化
 export function initInternalComponent (vm: Component, options: InternalComponentOptions) {
-  //vm.constructor.options =>Ctor构造函数的options属性，即组件对象和Vue全局的options合并而成的对象（src/core/global-api/extend.js:44）
+  //vm.constructor.options为当前组件的构造函数的options属性，即组件对象和Vue全局的options合并而成的对象（src/core/global-api/extend.js:44）
   // 将这个options作为子组件实例的options属性
   const opts = vm.$options = Object.create(vm.constructor.options) // Sub.options
   // doing this because it's faster than dynamic enumeration.
   // 组件的options会有_parentVnode属性(占位符vnode)(src/core/vdom/create-component.js:218)
   const parentVnode = options._parentVnode
-  //parent为当前vm的父组件实例
+  //parent为当前vm的父组件占位符的实例
   opts.parent = options.parent
-  //parentVnode是父组件的vnode
+  //parentVnode是父组件占位符的vnode
   opts._parentVnode = parentVnode
 
   const vnodeComponentOptions = parentVnode.componentOptions
   opts.propsData = vnodeComponentOptions.propsData
+  //将父组件的占位符组件赋值到当前组件的options._parentListeners属性中
   opts._parentListeners = vnodeComponentOptions.listeners
   opts._renderChildren = vnodeComponentOptions.children
   opts._componentTag = vnodeComponentOptions.tag

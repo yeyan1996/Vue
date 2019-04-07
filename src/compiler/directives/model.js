@@ -33,10 +33,12 @@ export function genComponentModel (
 /**
  * Cross-platform codegen helper for generating v-model value assignment code.
  */
+//value为v-model绑定的变量，assignment为value的值（表达式）
 export function genAssignmentCode (
   value: string,
   assignment: string
 ): string {
+  //将v-model的value变成一个对象（处理v-model="item[a]"的情况）
   const res = parseModel(value)
   if (res.key === null) {
     return `${value}=${assignment}`

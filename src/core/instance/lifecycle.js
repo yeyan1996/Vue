@@ -241,7 +241,7 @@ export function mountComponent (
   return vm
 }
 
-//更新子组件的props和listeners
+//更新子组件的props和lis teners
 export function updateChildComponent (
   vm: Component, //组件vnode
   propsData: ?Object,
@@ -297,6 +297,7 @@ export function updateChildComponent (
   listeners = listeners || emptyObject
   const oldListeners = vm.$options._parentListeners
   vm.$options._parentListeners = listeners
+  //更新组件的监听事件
   updateComponentListeners(vm, listeners, oldListeners)
 
   // resolve slots + force update if has children

@@ -350,7 +350,7 @@ export function processElement (element: ASTElement, options: CompilerOptions) {
   for (let i = 0; i < transforms.length; i++) {
     element = transforms[i](element, options) || element
   }
-  //对剩余属性的处理(监听事件)
+  //对剩余属性的处理(监听事件，v-model)
   processAttrs(element)
 }
 
@@ -570,7 +570,7 @@ function processAttrs (el) {
   for (i = 0, l = list.length; i < l; i++) {
     name = rawName = list[i].name
     value = list[i].value
-    //是否是v-on/@/:
+    //是否是vue的指令
     if (dirRE.test(name)) {
       // mark element as dynamic
       //标志是一个动态的AST节点
@@ -620,7 +620,7 @@ function processAttrs (el) {
         }
       } else if (onRE.test(name)) { // v-on
         name = name.replace(onRE, '')
-        //处理监听事件（原生/组件），给AST添加event对象保存事件
+        //处理监听事件（原生/组件），给AST添加event对象，所有事件保存在event对象中
         addHandler(el, name, value, modifiers, false, warn)
       } else { // normal directives
         name = name.replace(dirRE, '')
@@ -630,6 +630,7 @@ function processAttrs (el) {
         if (arg) {
           name = name.slice(0, -(arg.length + 1))
         }
+        //给AST对象添加directive属性
         addDirective(el, name, rawName, value, arg, modifiers)
         if (process.env.NODE_ENV !== 'production' && name === 'model') {
           checkForAliasModel(el, value)

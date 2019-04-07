@@ -32,7 +32,7 @@ export default function model (
       )
     }
   }
-
+  //动态组件
   if (el.component) {
     genComponentModel(el, value, modifiers)
     // component v-model doesn't need extra runtime
