@@ -80,7 +80,7 @@ export function renderMixin (Vue: Class<Component>) {
       //执行render函数(用户自己定义/模板编译出来的render函数),上下文为vm实例,然后传入createElement(36)函数作为参数
       //vm.$createElement会做一层处理，执行createElement会多传入了一个vm实例作为第一个参数
       // 生产环境下vm._renderProxy等于vm,开发环境会经过一层自定义错误的代理(src/core/instance/proxy.js:80)
-      /**将组件实例转为vnode **/
+      /**执行render函数返回vnode **/
       vnode = render.call(vm._renderProxy, vm.$createElement)
     } catch (e) {
       handleError(e, vm, `render`)

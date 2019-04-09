@@ -202,6 +202,7 @@ export function createPatchFunction (backend) {
         //遍历children递归创建子节点，形成一棵树
         createChildren(vnode, children, insertedVnodeQueue)
         if (isDef(data)) {
+          //执行vnode的create钩子
           invokeCreateHooks(vnode, insertedVnodeQueue)
         }
         //插入节点，因为children可能是树形结构,所以递归调用的时候是从子插入到父，子=>父=>真实dom（body节点）
@@ -481,7 +482,7 @@ export function createPatchFunction (backend) {
         oldStartVnode = oldCh[++oldStartIdx]
         newEndVnode = newCh[--newEndIdx]
       } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
-        //旧的最后一个 = 新的第一个 则将旧的移动到第一个
+        //旧的最后一个 = 新的第一个 则将旧的节点插入到第一个
         patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
         canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
         oldEndVnode = oldCh[--oldEndIdx]
@@ -494,8 +495,7 @@ export function createPatchFunction (backend) {
           ? oldKeyToIdx[newStartVnode.key]
           //新节点中没有定义key则会去一个个比对,找是否在旧children有节点是samenode
           : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
-        //根据key没有找到节点则准备创建一个新节点
-        if (isUndef(idxInOld)) { // New element
+        if (isUndef(idxInOld)) {  //根据key没有找到节点则准备创建一个新节点
           createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
         } else {
           //vnodeToMove为在映射表中找到的,新children的key和旧children的key相同的节点
@@ -516,6 +516,8 @@ export function createPatchFunction (backend) {
         newStartVnode = newCh[++newStartIdx]
       }
     }
+    /**diff移动节点的时候,只是复用旧节点并且复制一份指定位置,并不会创建节点(创建节点开销很大)**/
+    /**所以会有2个一模一样的节点,下面的操作会直接删除多余的节点**/
     //旧节点遍历完,而新节点还有
     //则将新节点没有遍历完的节点插入旧节点数组的最后
     if (oldStartIdx > oldEndIdx) {
