@@ -61,11 +61,12 @@ const componentVNodeHooks = {
  //给子组件传值的时候,父组件数据变化会通过prepatch钩子通知子组件数据变化(src/core/vdom/patch.js:596执行prepatch)
   prepatch (oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
     const options = vnode.componentOptions
+    /**prepatch时,新节点和旧节点使用的是相同的vm实例,新节点会复用旧节点中所有的数据**/
     const child = vnode.componentInstance = oldVnode.componentInstance
-    //更新子组件的props/listeners
+    //prepatch只会更新新旧节点的props/listeners
     updateChildComponent(
-      child, //旧vnode的vm实例
-      options.propsData, // updated props
+      child, //新旧节点共用的vm实例
+      options.propsData, // updated props //新vnode的props对象
       options.listeners, // updated listeners
       vnode, // new parent vnode
       options.children // new children

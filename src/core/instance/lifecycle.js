@@ -241,11 +241,11 @@ export function mountComponent (
   return vm
 }
 
-//更新子组件的props和lis teners
+//更新子组件的props和listeners
 export function updateChildComponent (
-  vm: Component, //组件vnode
-  propsData: ?Object,
-  listeners: ?Object,
+  vm: Component, //新旧节点共用的vm实例
+  propsData: ?Object, //新vnode的props对象
+  listeners: ?Object,//新vnode的listeners
   parentVnode: MountedComponentVNode, //占位符vnode
   renderChildren: ?Array<VNode>
 ) {

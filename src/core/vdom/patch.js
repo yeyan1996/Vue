@@ -42,7 +42,7 @@ function sameVnode (a, b) {
       (
         a.tag === b.tag && //且tag相同
         a.isComment === b.isComment && //且都是/不是注释节点
-        isDef(a.data) === isDef(b.data) && //data属性都定义了
+        isDef(a.data) === isDef(b.data) && //input节点的type相同
         sameInputType(a, b)
       ) || (
         isTrue(a.isAsyncPlaceholder) &&
@@ -605,10 +605,10 @@ export function createPatchFunction (backend) {
     const data = vnode.data
     //如果是组件vnode,执行组件vnode的hook中的prepatch钩子,更新子组件引用到的一些props和事件(src/core/vdom/create-component.js:61)
     if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
-      /**prepatch钩子内会改变props,同时触发子组件的渲染watcher进行重新渲染**/
+      /**prepatch钩子内会更新props(src/core/vdom/create-component.js:62),同时触发子组件的渲染watcher进行重新渲染**/
       i(oldVnode, vnode)
     }
-     //如果是组件,则children属性为空数组
+     //组件children为空数组
     const oldCh = oldVnode.children
     const ch = vnode.children
     if (isDef(data) && isPatchable(vnode)) {
@@ -618,6 +618,7 @@ export function createPatchFunction (backend) {
     }
     //如果不是一个文本节点
     if (isUndef(vnode.text)) {
+      //如果新旧节点的vnode都不是组件vnode
       if (isDef(oldCh) && isDef(ch)) {
         //新旧vnode都有子节点且子节点不同,则执行diff算法
         if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
