@@ -7,6 +7,7 @@ import type VNode from 'core/vdom/vnode'
  */
 export function resolveSlots (
   children: ?Array<VNode>,
+  //父节点的占位符节点
   context: ?Component
 ): { [key: string]: Array<VNode> } {
   const slots = {}
@@ -25,14 +26,16 @@ export function resolveSlots (
     if ((child.context === context || child.fnContext === context) &&
       data && data.slot != null
     ) {
+      //获取具名插槽的名字（字符串）
       const name = data.slot
       const slot = (slots[name] || (slots[name] = []))
       if (child.tag === 'template') {
         slot.push.apply(slot, child.children || [])
       } else {
+        //将父组件的对应的节点放到它定义的具名插槽的数组中
         slot.push(child)
       }
-    } else {
+    } else { //否则放到默认插槽中作为它的children
       (slots.default || (slots.default = [])).push(child)
     }
   }

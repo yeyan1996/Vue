@@ -129,6 +129,7 @@ export function parse (
         attrs = guardIESVGBug(attrs)
       }
       //初始化一个ast节点，保存在element变量中
+      //currentParent会作为这个ast对象的父ast对象
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
         element.ns = ns
@@ -246,6 +247,7 @@ export function parse (
       // pop stack
       //将栈顶元素弹出后，currentParent就等于弹出后的栈的栈顶元素
       stack.length -= 1
+      //currentParent为弹出后的栈顶元素
       currentParent = stack[stack.length - 1]
       closeElement(element)
     },
@@ -350,7 +352,7 @@ export function processElement (element: ASTElement, options: CompilerOptions) {
   for (let i = 0; i < transforms.length; i++) {
     element = transforms[i](element, options) || element
   }
-  //对剩余属性的处理(监听事件，v-model)
+  //对剩余属性的处理(监听事件，v-model，绑定的变量)
   processAttrs(element)
 }
 
@@ -506,6 +508,8 @@ function processOnce (el) {
 }
 
 function processSlot (el) {
+  //子组件：提供插槽
+  //给子组件的ast对象添加slotName属性
   if (el.tag === 'slot') {
     el.slotName = getBindingAttr(el, 'name')
     if (process.env.NODE_ENV !== 'production' && el.key) {
@@ -542,12 +546,15 @@ function processSlot (el) {
       }
       el.slotScope = slotScope
     }
+    //父组件:传入插槽，所以需要在传入到插槽的节点添加slot属性
+    //从ast对象中获取含有slot属性的值
     const slotTarget = getBindingAttr(el, 'slot')
     if (slotTarget) {
       el.slotTarget = slotTarget === '""' ? '"default"' : slotTarget
       // preserve slot as an attribute for native shadow DOM compat
       // only for non-scoped slots.
       if (el.tag !== 'template' && !el.slotScope) {
+        //添加slot到ast的attrs属性中
         addAttr(el, 'slot', slotTarget)
       }
     }
@@ -582,7 +589,7 @@ function processAttrs (el) {
         //去除修饰符
         name = name.replace(modifierRE, '')
       }
-      if (bindRE.test(name)) { // v-bind
+      if (bindRE.test(name)) { // v-bind或者:绑定的变量
         name = name.replace(bindRE, '')
         value = parseFilters(value)
         isProp = false
@@ -611,6 +618,7 @@ function processAttrs (el) {
             )
           }
         }
+        //对组件的属性/原生HTML标签的属性做不同处理
         if (isProp || (
           !el.component && platformMustUseProp(el.tag, el.attrsMap.type, name)
         )) {

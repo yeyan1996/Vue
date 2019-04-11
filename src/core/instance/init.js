@@ -59,6 +59,7 @@ export function initMixin (Vue: Class<Component>) {
     initLifecycle(vm)
     //初始化自定义事件
     initEvents(vm)
+    //初始化插槽，使$attr/$listeners响应式，定义createElement函数
     initRender(vm)
     //执行beforeCreate钩子（这个钩子执行的时候initState还没执行没有data等一系列属性）
     callHook(vm, 'beforeCreate')
@@ -85,7 +86,7 @@ export function initMixin (Vue: Class<Component>) {
   }
 }
 
-//组件的初始化
+/**组件的初始化**/
 export function initInternalComponent (vm: Component, options: InternalComponentOptions) {
   //vm.constructor.options为当前组件的构造函数的options属性，即组件对象和Vue全局的options合并而成的对象（src/core/global-api/extend.js:44）
   // 将这个options作为子组件实例的options属性
@@ -102,6 +103,7 @@ export function initInternalComponent (vm: Component, options: InternalComponent
   opts.propsData = vnodeComponentOptions.propsData
   //将父组件的占位符组件赋值到当前组件的options._parentListeners属性中
   opts._parentListeners = vnodeComponentOptions.listeners
+  //将组件的children赋值给_renderChildren
   opts._renderChildren = vnodeComponentOptions.children
   opts._componentTag = vnodeComponentOptions.tag
 

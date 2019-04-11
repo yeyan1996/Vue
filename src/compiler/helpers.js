@@ -127,6 +127,7 @@ export function addHandler (
   el.plain = false
 }
 
+//获取静态/动态绑定的值
 export function getBindingAttr (
   el: ASTElement,
   name: string,

@@ -5,8 +5,10 @@ import { extend, warn, isObject } from 'core/util/index'
 /**
  * Runtime helper for rendering <slot>
  */
+//对应编译阶段的genSlot中的_t函数（src/compiler/codegen/index.js:498）
 export function renderSlot (
   name: string,
+  //默认插槽内容（slot标签的子节点children）
   fallback: ?Array<VNode>,
   props: ?Object,
   bindObject: ?Object

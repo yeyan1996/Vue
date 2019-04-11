@@ -407,6 +407,7 @@ function genForScopedSlot (
     '})'
 }
 
+//获取当前ast对象的children组成的字符串代码（数组）
 export function genChildren (
   el: ASTElement,
   state: CodegenState,
@@ -495,8 +496,11 @@ export function genComment (comment: ASTText): string {
 }
 
 function genSlot (el: ASTElement, state: CodegenState): string {
+  //含有slotName即子组件（src/compiler/parser/index.js:513给子组件添加slotName）
   const slotName = el.slotName || '"default"'
+  //获取子组件slot标签的子节点（即插槽的子节点，当没有提供插槽时会自动使用这个子节点）
   const children = genChildren(el, state)
+  //渲染插槽的辅助函数
   let res = `_t(${slotName}${children ? `,${children}` : ''}`
   const attrs = el.attrs && `{${el.attrs.map(a => `${camelize(a.name)}:${a.value}`).join(',')}}`
   const bind = el.attrsMap['v-bind']
