@@ -103,7 +103,7 @@ export function initInternalComponent (vm: Component, options: InternalComponent
   opts.propsData = vnodeComponentOptions.propsData
   //将父组件的占位符组件赋值到当前组件的options._parentListeners属性中
   opts._parentListeners = vnodeComponentOptions.listeners
-  //将组件的children赋值给_renderChildren
+  //将组件的children赋值给_renderChildren，用来分配给插槽
   opts._renderChildren = vnodeComponentOptions.children
   opts._componentTag = vnodeComponentOptions.tag
 
