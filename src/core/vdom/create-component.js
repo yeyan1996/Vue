@@ -124,6 +124,7 @@ export function createComponent (
   const baseCtor = context.$options._base
 
   // plain options object: turn it into a constructor
+  /**继承Vue构造函数**/
   //如果第一个参数为组件options时调用Vue.extend()传入这个对象，返回一个子类的构造器函数(保证Ctor是一个函数)
   // Vue.extend在src/core/global-api/extend.js:20
   if (isObject(Ctor)) {
@@ -229,12 +230,14 @@ export function createComponent (
   return vnode
 }
 
+//通过组件构造器实例化子组件实例
 export function createComponentInstanceForVnode (
   //组件vnode
   vnode: any, // we know it's MountedComponentVNode but flow doesn't
   //parent为当前组件的父实例
   parent: any, // activeInstance in lifecycle state
 ): Component {
+  //Vue内部实例化组件构造器的时候会传一些额外的options来维护父子关系
   const options: InternalComponentOptions = {
     _isComponent: true,
     //占位符vnode(占位符vnode即在父组件中表名这个是一个组件的标签<hello-world>,在helloworld组件中它的parent是这个占位符)

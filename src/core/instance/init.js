@@ -94,7 +94,7 @@ export function initInternalComponent (vm: Component, options: InternalComponent
   // doing this because it's faster than dynamic enumeration.
   // 组件的options会有_parentVnode属性(占位符vnode)(src/core/vdom/create-component.js:218)
   const parentVnode = options._parentVnode
-  //parent为当前vm的父组件占位符的实例
+  //parent是父组件占位符的父组件的实例
   opts.parent = options.parent
   //parentVnode是父组件占位符的vnode
   opts._parentVnode = parentVnode

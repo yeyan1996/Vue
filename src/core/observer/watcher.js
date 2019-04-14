@@ -62,6 +62,7 @@ export default class Watcher {
       this.user = !!options.user
       this.lazy = !!options.lazy //如果是computed watcher的话lazy为true
       this.sync = !!options.sync
+      //定义beforeUpdate钩子
       this.before = options.before
     } else {
       this.deep = this.user = this.lazy = this.sync = false

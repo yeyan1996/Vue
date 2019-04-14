@@ -14,7 +14,7 @@ export function initEvents (vm: Component) {
   vm._events = Object.create(null)
   vm._hasHookEvent = false
   // init parent attached events
-  //拿到这个组件在父节点中的占位符节点的所有监听事件（外层声明的自定义事件）
+  //拿到这个组件在父节点中的占位符节点的所有监听事件（父组件声明的自定义事件）
   const listeners = vm.$options._parentListeners
   if (listeners) {
     updateComponentListeners(vm, listeners)

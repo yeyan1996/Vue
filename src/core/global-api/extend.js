@@ -41,7 +41,7 @@ export function initExtend (Vue: GlobalAPI) {
     Sub.prototype = Object.create(Super.prototype)
     Sub.prototype.constructor = Sub
     Sub.cid = cid++
-    //定义子类构造函数的options属性为这个组件对象的属性和Vue.options合并
+    //将这个组件对象的属性和Vue.options合并赋值给子类构造函数的options属性
     Sub.options = mergeOptions(
       Super.options,
       extendOptions

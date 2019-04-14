@@ -149,8 +149,8 @@ function mergeHook (
       parentVal.concat(childVal)
       : Array.isArray(childVal) ? //子有生命周期但是父没有时，判断子是否是由生命周期函数组成的数组
       childVal //直接返回
-        : [childVal] //用数组包裹确保子组件的生命周期函数是一个数组组成的集合
-    : parentVal //当前组件没有当前的生命周期的回调就使用Vue.options/局部混入里的那个生命周期函数数组
+        : [childVal] //用数组包裹确保子组件的生命周期函数保证是一个数组组成的集合
+    : parentVal //当前组件没有当前生命周期函数就使用Vue.options/局部混入里的那个生命周期函数数组
 }
 
 LIFECYCLE_HOOKS.forEach(hook => {
@@ -245,7 +245,7 @@ strats.provide = mergeDataOrFn
 /**
  * Default strategy.
  */
-//默认合并策略，child没有提供这个属性就用父亲的
+//默认合并策略，child没有提供这个属性就用父亲的，否则就用child的
 const defaultStrat = function (parentVal: any, childVal: any): any {
   return childVal === undefined
     ? parentVal
@@ -373,6 +373,7 @@ function assertObjectType (name: string, value: any, vm: ?Component) {
  */
 //合并配置(data,computed,watch,methods,生命周期钩子)
 export function mergeOptions (
+  //根实例合并的时候parent为Vue.options即Vue预先设置的一些属性，child为实例化Vue传入的参数
   parent: Object,
   child: Object,
   vm?: Component

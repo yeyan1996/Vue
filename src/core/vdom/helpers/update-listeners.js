@@ -64,6 +64,7 @@ export function updateListeners (
 ) {
   let name, def, cur, old, event
   for (name in on) {
+    //每个监听事件的cur都是不同的
     def = cur = on[name]
     old = oldOn[name]
     //解析修饰符(~,&,!之类的符号(在编译阶段会将capture等部分修饰符换成符号))
@@ -80,13 +81,13 @@ export function updateListeners (
       )
     } else if (isUndef(old)) { //开始创建事件
       if (isUndef(cur.fns)) {
+        //cur为invoker函数，invoker的fns属性为
         cur = on[name] = createFnInvoker(cur)
       }
       //如果有once标记则在执行一次后,调用removeListener移除事件处理程序(src/platforms/web/runtime/modules/events.js:31)
       if (isTrue(event.once)) {
         cur = on[name] = createOnceHandler(event.name, cur, event.capture)
       }
-      //add定义在(src/platforms/web/runtime/modules/events.js:41)
       add(event.name, cur, event.capture, event.passive, event.params)
     } else if (cur !== old) { //开始更新事件
       //只要将旧的fns属性指向新的事件处理程序即可
