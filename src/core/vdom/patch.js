@@ -199,7 +199,7 @@ export function createPatchFunction (backend) {
           insert(parentElm, vnode.elm, refElm)
         }
       } else {
-        //遍历children递归创建子节点，形成一棵树
+        /**遍历children递归创建子节点，形成一棵树**/
         createChildren(vnode, children, insertedVnodeQueue)
         if (isDef(data)) {
           //执行vnode的create钩子

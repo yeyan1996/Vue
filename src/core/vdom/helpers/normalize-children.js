@@ -55,7 +55,7 @@ function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNo
     lastIndex = res.length - 1
     last = res[lastIndex]
     //  nested(嵌套)
-    //如果是嵌套数组就递归调用(<template>, <slot>, v-for)
+    //如果是一个二维数组就递归调用normalizeArrayChildren(<template>, <slot>, v-for)
     if (Array.isArray(c)) {
       if (c.length > 0) {
         c = normalizeArrayChildren(c, `${nestedIndex || ''}_${i}`)

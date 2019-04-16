@@ -22,6 +22,9 @@ export function initRender (vm: Component) {
   const parentVnode = vm.$vnode = options._parentVnode // the placeholder node in parent tree
   const renderContext = parentVnode && parentVnode.context
   //定义插槽（_renderChildren为之前initInternalComponent中定义的组件的children）,返回一个包含所有具名和默认插槽的对象
+  //vm为子组件
+  //options._renderChildren为子组件在父组件的占位符节点中包裹的children
+  //renderContext为父节点
   vm.$slots = resolveSlots(options._renderChildren, renderContext)
   vm.$scopedSlots = emptyObject
   // bind the createElement fn to this instance
