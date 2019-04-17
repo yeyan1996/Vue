@@ -14,7 +14,7 @@ let uid = 0
 
 //在调用vue构造函数的时候会执行该方法初始化
 export function initMixin (Vue: Class<Component>) {
-  Vue.prototype._init = function (options?: Object) {
+  Vue.prototype._init = function (/*对于根实例传入的是new Vue的配置项,组件传入的是组件节点独有的配置项*/options?: Object) {
     const vm: Component = this
     // a uid
     vm._uid = uid++

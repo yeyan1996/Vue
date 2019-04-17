@@ -395,6 +395,7 @@ export function mergeOptions (
   // the result of another mergeOptions call.
   // Only merged options has the _base property.
   if (!child._base) {
+    //extends属性,合并这个组件继承的子组件的属性
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm)
     }
