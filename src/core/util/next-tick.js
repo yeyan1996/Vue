@@ -121,8 +121,8 @@ export function nextTick (cb?: Function, ctx?: Object) {
   })
   if (!pending) {
     pending = true
-    //默认为false使用微任务(即异步执行回调队列中的回调函数)
-    //如果有_resolve则会在同步任务执行完后决议Promise(也就是this.$nextTick)
+
+    //只有DOM事件的回调执行的时候useMacroTask为true,此时处在下个宏任务队列,让nextTick在再下个宏任务队列中执行
     if (useMacroTask) {
       macroTimerFunc()
     } else {

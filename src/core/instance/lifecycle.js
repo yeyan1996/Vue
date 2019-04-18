@@ -255,6 +255,7 @@ export function updateChildComponent (
 
   // determine whether component has slot children
   // we need to do this before overwriting $options._renderChildren
+  //因为是组件的更新,hasChildren判断的是组件是否有子节点,即是否含有给子组件插槽填入的节点
   const hasChildren = !!(
     renderChildren ||               // has new static slots
     vm.$options._renderChildren ||  // has old static slots
@@ -301,8 +302,10 @@ export function updateChildComponent (
   updateComponentListeners(vm, listeners, oldListeners)
 
   // resolve slots + force update if has children
+  //插槽填入的节点的更新
   if (hasChildren) {
     vm.$slots = resolveSlots(renderChildren, parentVnode.context)
+    //通过$forceUpdate,强制渲染视图
     vm.$forceUpdate()
   }
 

@@ -64,12 +64,13 @@ export function renderMixin (Vue: Class<Component>) {
   Vue.prototype.$nextTick = function (fn: Function) {
     return nextTick(fn, this)
   }
-  //使用在src/core/instance/lifecycle.js:211
+  //生成vnode树(使用在src/core/instance/lifecycle.js:211)
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
     //如果是子组件会有_parentVnode属性,即父组件中的占位符(src/core/vdom/create-component.js:225)
     const { render, _parentVnode } = vm.$options
 
+    //定义作用域插槽(此时已经是一个格式化后的对象)
     if (_parentVnode) {
       vm.$scopedSlots = _parentVnode.data.scopedSlots || emptyObject
     }

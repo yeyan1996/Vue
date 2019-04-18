@@ -214,7 +214,8 @@ export function parse (
       if (currentParent && !element.forbidden) {
         if (element.elseif || element.else) {
           processIfConditions(element, currentParent)
-        } else if (element.slotScope) { // scoped slot
+        } else if (element.slotScope) { // scoped slot 处理作用域插槽的节点(作用域插槽填入的节点都是包裹在组件中的节点)
+          //currentParent为包裹作用域插槽填入节点的组件
           currentParent.plain = false
           const name = element.slotTarget || '"default"'
           ;(currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element
@@ -522,6 +523,7 @@ function processSlot (el) {
   } else {
     let slotScope
     if (el.tag === 'template') {
+      //vue2.5以下
       slotScope = getAndRemoveAttr(el, 'scope')
       /* istanbul ignore if */
       if (process.env.NODE_ENV !== 'production' && slotScope) {
@@ -534,7 +536,7 @@ function processSlot (el) {
         )
       }
       el.slotScope = slotScope || getAndRemoveAttr(el, 'slot-scope')
-    } else if ((slotScope = getAndRemoveAttr(el, 'slot-scope'))) {
+    } else if ((slotScope = getAndRemoveAttr(el, 'slot-scope'))) { //vue2.5
       /* istanbul ignore if */
       if (process.env.NODE_ENV !== 'production' && el.attrsMap['v-for']) {
         warn(
@@ -544,6 +546,7 @@ function processSlot (el) {
           true
         )
       }
+      //给ast对象定义一个slotScope属性,获取到占位符的slot-scope中的值
       el.slotScope = slotScope
     }
     //父组件:传入插槽，所以需要在传入到插槽的节点添加slot属性

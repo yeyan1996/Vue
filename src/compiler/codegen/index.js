@@ -362,12 +362,19 @@ function genInlineTemplate (el: ASTElement, state: CodegenState): ?string {
   }
 }
 
+//生成作用域插槽的code
 function genScopedSlots (
+  //传入el.scopedSlots对象
   slots: { [key: string]: ASTElement },
   state: CodegenState
 ): string {
+  //_u是一个处理作用域插槽的函数(src/core/instance/render-helpers/resolve-slots.js:59)
+  //返回的值作为createElement的第二个参数(会给第二个data对象添加一个scopeSlots属性)
   return `scopedSlots:_u([${
     Object.keys(slots).map(key => {
+      //key为slot-scope的名字
+      //返回一个对象,key属性为插槽的名字,fn属性为一个函数,返回占位符节点的子节点(插入的vnode)
+      //@see https://cn.vuejs.org/v2/guide/render-function.html
       return genScopedSlot(key, slots[key], state)
     }).join(',')
   }])`
@@ -381,13 +388,18 @@ function genScopedSlot (
   if (el.for && !el.forProcessed) {
     return genForScopedSlot(key, el, state)
   }
+  //声明一个函数,参数为slot-scope的值
+  //@example
+  //<template slot-scope="item">
+  // <div>{{item.a}}   这里可以拿到item,因为作为el.slotScope=item,并且作为函数参数传入
   const fn = `function(${String(el.slotScope)}){` +
-    `return ${el.tag === 'template'
+    `return ${el.tag === 'template' //如果被插入到插槽的子节点被template包裹,则取到template的子节点(template标签不渲染任何内容)
       ? el.if
         ? `(${el.if})?${genChildren(el, state) || 'undefined'}:undefined`
         : genChildren(el, state) || 'undefined'
       : genElement(el, state)
     }}`
+  //返回值的集合作为上面_u函数的参数
   return `{key:${key},fn:${fn}}`
 }
 
@@ -408,6 +420,8 @@ function genForScopedSlot (
 }
 
 //获取当前ast对象的children组成的字符串代码（数组）
+//@example
+//"[_c("div",{...},[.....]),_c("div",{...},[.....]),_c("div",{...},[.....])]"
 export function genChildren (
   el: ASTElement,
   state: CodegenState,
@@ -495,14 +509,16 @@ export function genComment (comment: ASTText): string {
   return `_e(${JSON.stringify(comment.text)})`
 }
 
+//生成renderSlot(_t)函数的code
 function genSlot (el: ASTElement, state: CodegenState): string {
-  //含有slotName即子组件（src/compiler/parser/index.js:513给子组件添加slotName）
+  //给子组件添加slotName（src/compiler/parser/index.js:515）
   const slotName = el.slotName || '"default"'
-  //获取子组件slot标签的子节点（即插槽的子节点，当没有提供插槽时会自动使用这个子节点）
+  //获取子组件slot标签的子节点（即子组件插槽的子节点，当没有提供插槽时会自动使用这个子节点作为fallback）
   const children = genChildren(el, state)
   //渲染插槽的辅助函数
   let res = `_t(${slotName}${children ? `,${children}` : ''}`
   const attrs = el.attrs && `{${el.attrs.map(a => `${camelize(a.name)}:${a.value}`).join(',')}}`
+  //获取给作用域插槽使用的属性
   const bind = el.attrsMap['v-bind']
   if ((attrs || bind) && !children) {
     res += `,null`
@@ -511,6 +527,8 @@ function genSlot (el: ASTElement, state: CodegenState): string {
     res += `,${attrs}`
   }
   if (bind) {
+    //将作用域插槽需要传给父组件的属性作为_t函数的第三个参数
+    //解析renderSlot(src/core/instance/render-helpers/render-slot.js:11)
     res += `${attrs ? '' : ',null'},${bind}`
   }
   return res + ')'

@@ -13,6 +13,7 @@ export function resolveSlots (
   //父节点
   context: ?Component
 ): { [key: string]: Array<VNode> } {
+  //声明一个保存所有插槽的对象,最后返回这个对象作为vm.$slots
   const slots = {}
   if (!children) {
     return slots
@@ -55,6 +56,7 @@ function isWhitespace (node: VNode): boolean {
   return (node.isComment && !node.asyncFactory) || node.text === ' '
 }
 
+//格式化data对象的scopedSlot属性,由{key:aaa,value:bbb} => {aaa:bbb}
 export function resolveScopedSlots (
   fns: ScopedSlotsData, // see flow/vnode
   res?: Object
