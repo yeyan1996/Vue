@@ -36,13 +36,13 @@ export function initLifecycle (vm: Component) {
 
   // locate first non-abstract parent
   let parent = options.parent
-  //如果这个组件有父组件
-  //抽象组件(keep-alive,transition)不会被添加到页面中
+  //如果这个组件有父组件,将父组件的$children属性添加这个子组件的实例
+  //对于抽象组件(keep-alive,transition)不会被添加到parent实例的$children数组中
   if (parent && !options.abstract) {
+    //绕过抽象节点建立父子关系，即给当前vm实例最近的一个非抽象节点的$children中添加当前实例
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
     }
-    //将父组件的$children属性添加这个子组件的实例
     parent.$children.push(vm)
   }
 
