@@ -36,13 +36,13 @@ export function initLifecycle (vm: Component) {
 
   // locate first non-abstract parent
   let parent = options.parent
-  //如果这个组件有父组件
-  //抽象组件(keep-alive,transition)不会被添加到页面中
+  //如果这个组件有父组件,将父组件的$children属性添加这个子组件的实例
+  //对于抽象组件(keep-alive,transition)不会被添加到parent实例的$children数组中
   if (parent && !options.abstract) {
+    //绕过抽象节点建立父子关系，即给当前vm实例最近的一个非抽象节点的$children中添加当前实例
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
     }
-    //将父组件的$children属性添加这个子组件的实例
     parent.$children.push(vm)
   }
 
@@ -208,7 +208,7 @@ export function mountComponent (
     updateComponent = () => {
       //hydrating和SSR有关一般为false
       /**
-       * 一般会走到这里,_render方法将实例转化为vnode(src/core/instance/render.js:64)
+       * 一般会走到这里,_render方法将实例转化为vnode(src/core/instance/render.js:68)
        * 定义了_update(62)，它会执行__patch__方法将vnode转为dom节点（核心逻辑）
        * **/
       vm._update(vm._render(), hydrating)

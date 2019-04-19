@@ -64,7 +64,8 @@ export function renderMixin (Vue: Class<Component>) {
   Vue.prototype.$nextTick = function (fn: Function) {
     return nextTick(fn, this)
   }
-  //生成vnode树(使用在src/core/instance/lifecycle.js:211)
+
+  //$mount会调用_render生成vnode
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
     //如果是子组件会有_parentVnode属性,即父组件中的占位符(src/core/vdom/create-component.js:225)
