@@ -202,7 +202,7 @@ export function createPatchFunction (backend) {
         /**遍历children递归创建子节点，形成一棵树**/
         createChildren(vnode, children, insertedVnodeQueue)
         if (isDef(data)) {
-          //执行vnode的create钩子
+          //执行vnode的create钩子(挂载DOM的监听事件)
           invokeCreateHooks(vnode, insertedVnodeQueue)
         }
         //插入节点，因为children可能是树形结构,所以递归调用的时候是从子插入到父，子=>父=>真实dom（body节点）
