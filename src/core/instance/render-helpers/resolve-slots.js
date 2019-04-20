@@ -6,7 +6,7 @@ import type VNode from 'core/vdom/vnode'
  * Runtime helper for resolving raw children VNodes into a slot object.
  */
 //返回slots对象，属性是插槽的名字，值是对应的这个插槽所包含的父组件的插入节点
-//子节点会收集到占位符节点的children组成的vnode放入$slot，作为renderSlot的变量
+//子节点会收集到父组件的children组成的vnode数组放入$slot，作为renderSlot的变量
 export function resolveSlots (
   //父组件的children
   children: ?Array<VNode>,

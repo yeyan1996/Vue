@@ -23,7 +23,7 @@ export function initRender (vm: Component) {
   const renderContext = parentVnode && parentVnode.context
   //定义插槽（_renderChildren为之前initInternalComponent中定义的组件的children）,返回一个包含所有具名和默认插槽的对象
   //vm为子组件
-  //options._renderChildren为子组件在父组件的占位符节点中包裹的children
+  //options._renderChildren为子组件在父组件中包裹的children
   //renderContext为父节点
   vm.$slots = resolveSlots(options._renderChildren, renderContext)
   vm.$scopedSlots = emptyObject
@@ -68,7 +68,7 @@ export function renderMixin (Vue: Class<Component>) {
   //$mount会调用_render生成vnode
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
-    //如果是子组件会有_parentVnode属性,即父组件中的占位符(src/core/vdom/create-component.js:225)
+    //拿到子组件的render函数和父组件的占位符vnode
     const { render, _parentVnode } = vm.$options
 
     //定义作用域插槽(此时已经是一个格式化后的对象)
@@ -78,7 +78,7 @@ export function renderMixin (Vue: Class<Component>) {
 
     // set parent vnode. this allows render functions to have access
     // to the data on the placeholder node.
-    //父组件中的占位符赋值给vm的$vnode属性
+    //将子组件的$vnode属性保存父组件的占位符vnode
     vm.$vnode = _parentVnode
     // render self
     let vnode

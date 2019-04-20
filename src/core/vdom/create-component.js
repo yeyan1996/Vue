@@ -33,10 +33,9 @@ import {
 } from 'weex/runtime/recycle-list/render-component-template'
 
 // inline hooks to be invoked on component VNodes during patch
-//执行installComponentHooks(253)函数的时候会用到这个对象
 //声明了组件vnode的生命周期钩子
 const componentVNodeHooks = {
-  //init钩子会创建子组件实例
+  //init钩子会根据子组件的vnode创建子组件实例
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
       vnode.componentInstance &&
@@ -46,6 +45,7 @@ const componentVNodeHooks = {
       //如果组件被keep-alive缓存过了,则会直接prepatch不会在执行$mount(也就不会触发mounted,created等钩子)
       // kept-alive components, treat as a patch
       const mountedNode: any = vnode // work around flow
+      //直接执行prepatch更新逻辑
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
       //createComponentInstanceForVnode通过调用子组件的构造器返回子组件的实例
@@ -80,6 +80,7 @@ const componentVNodeHooks = {
       componentInstance._isMounted = true
       callHook(componentInstance, 'mounted')
     }
+    //执行keep-alive的生命周期（activated,deactivated）
     if (vnode.data.keepAlive) {
       if (context._isMounted) {
         // vue-router#1212
@@ -87,19 +88,23 @@ const componentVNodeHooks = {
         // change, so directly walking the tree here may call activated hooks
         // on incorrect children. Instead we push them into a queue which will
         // be processed after the whole patch process ended.
+        //keep-alive节点，使用缓存中的vnode时，维护一个队列在nextTick的watchers都被执行后，执行activated钩子
         queueActivatedComponent(componentInstance)
       } else {
+        //keep-alive包裹的节点第一次mounted会遍历并且执行内部所有的activated钩子
         activateChildComponent(componentInstance, true /* direct */)
       }
     }
   },
-
+  //销毁组件钩子
   destroy (vnode: MountedComponentVNode) {
     const { componentInstance } = vnode
     if (!componentInstance._isDestroyed) {
+
       if (!vnode.data.keepAlive) {
         componentInstance.$destroy()
       } else {
+        ////keepalive包裹的子组件不会执行destroy钩子，相反会触发deavtivated钩子
         deactivateChildComponent(componentInstance, true /* direct */)
       }
     }
@@ -240,7 +245,8 @@ export function createComponentInstanceForVnode (
   //Vue内部实例化组件构造器的时候会传一些额外的options来维护父子关系
   const options: InternalComponentOptions = {
     _isComponent: true,
-    //占位符vnode(占位符vnode即在父组件中表名这个是一个组件的标签<hello-world>,在helloworld组件中它的parent是这个占位符)
+    // 占位符vnode即在父组件中表名这个是一个组件的标签<hello-world>
+    // 它是一个vnode，依靠子组件渲染出真正的vnode（渲染vnode）和dom节点（将DOM节点赋值给占位符vnode的elm属性）
     _parentVnode: vnode,
     parent
   }

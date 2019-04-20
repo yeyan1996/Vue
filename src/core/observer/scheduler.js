@@ -90,8 +90,10 @@ function flushSchedulerQueue () {
  //当当前轮的queue全部遍历完之后，清空has对象,queue数组
   resetSchedulerState()
 
-  // call component updated and activated hooks(2个生命周期钩子)
+  // call component updated and activated hooks
+  //执行所有activated钩子
   callActivatedHooks(activatedQueue)
+  //执行updated钩子
   callUpdatedHooks(updatedQueue)
 
   // devtool hook
@@ -117,6 +119,8 @@ function callUpdatedHooks (queue) {
  * Queue a kept-alive component that was activated during patch.
  * The queue will be processed after the entire tree has been patched.
  */
+//给activatedChildren添加一个准备执行activated钩子的元素，并在所有watcher被执行之后执行数组中所有vm实例的activated钩子（94）
+//执行时机在nextTick后
 export function queueActivatedComponent (vm: Component) {
   // setting _inactive to false here so that a render function can
   // rely on checking whether it's in an inactive tree (e.g. router-view)

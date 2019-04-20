@@ -130,7 +130,7 @@ export function createPatchFunction (backend) {
 
   let creatingElmInVPre = 0
 
-  //patch最终会调用这个createElm将vnode转换为dom节点
+  //patch最终会调用这个createElm将vnode转换为dom节点，并且插入到父DOM节点下面
   //如果是组件vnode创建的dom节点只有前2个有值,第一个参数为组件的vnode,第二个参数为空数组
   function  createElm (
     vnode,
@@ -228,13 +228,14 @@ export function createPatchFunction (backend) {
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data
     if (isDef(i)) {
-      //被keepalive组件缓存过为true
+      //第一次进入vnode.componentInstance为false，还没用实例化(init钩子中实例化子组件)
+      //对于keepAlive的组件，下次进入的时候isReactivated为true
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
       //如果是组件的vnode会有init方法和hook属性,因为执行了createElement中的installComponentHooks方法(src/core/vdom/create-component.js:200)
-      // 执行组件的init钩子
+      //执行组件的init钩子
       if (isDef(i = i.hook) && isDef(i = i.init)) {
-        /** 创建子组件实例,并且执行$mount生成DOM节点 **/
-        //执行vnode.data.init函数(src/core/vdom/create-component.js:40)
+        /** 执行init钩子，创建子组件实例,并且执行$mount生成DOM节点(src/core/vdom/create-component.js:40) **/
+        //对于keepAlive缓存过的vnode则会跳过init进入prepatch钩子
         i(vnode, false /* hydrating */)
       }
       // after calling the init hook, if the vnode is a child component
@@ -277,12 +278,14 @@ export function createPatchFunction (backend) {
     }
   }
 
+  //keep-alive
   function reactivateComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     let i
     // hack for #4339: a reactivated component with inner transition
     // does not trigger because the inner node's created hooks are not called
     // again. It's not ideal to involve module-specific logic in here but
     // there doesn't seem to be a better way to do it.
+    //bug修复
     let innerNode = vnode
     while (innerNode.componentInstance) {
       innerNode = innerNode.componentInstance._vnode
@@ -325,9 +328,9 @@ export function createPatchFunction (backend) {
       nodeOps.appendChild(vnode.elm, nodeOps.createTextNode(String(vnode.text)))
     }
   }
-//找到一个挂载的节点(渲染vnode)
+//找到一个可挂载的节点(渲染vnode)
   function isPatchable (vnode) {
-    //渲染vnode没有componentInstance,占位符vnode才有
+    /**渲染vnode没有componentInstance,占位符vnode才有**/
     while (vnode.componentInstance) {
       //向下找到这个占位符vnode的渲染vnode
       vnode = vnode.componentInstance._vnode
@@ -826,15 +829,16 @@ export function createPatchFunction (backend) {
           // 将真实的dom($el)转换为vnode
           oldVnode = emptyNodeAt(oldVnode)
         }
-        //不是一个相似的节点,则进行组件替换(和组件更新不同,替换是生成组件的节点=>替换父节点中这个组件的占位符节点=>删除旧节点)
         // replacing existing element
+        //不是一个相似的节点,则进行组件替换(和组件更新不同,替换是生成组件的节点=>替换父组件的占位符vnode的elm属性（真实DOM）=>删除旧节点)
         //将真实dom转换的vdom声明一个elm属性值为这个dom节点
         const oldElm = oldVnode.elm
         // 真实dom的parent节点(body)
         const parentElm = nodeOps.parentNode(oldElm)
 
         // create new node
-        //根据新的虚拟dom创建真实的dom节点
+        /**patch流程为 创建新DOM => 更新父组件占位符vnode => 删除旧DOM **/
+        //根据新的虚拟dom创建真实的dom节点,并插入到父DOM节点下
         createElm(
           vnode, //新的节点的vnode
           insertedVnodeQueue,
@@ -846,7 +850,7 @@ export function createPatchFunction (backend) {
         )
 
         // update parent placeholder node element, recursively
-        //更新父的占位符节点
+        //更新父组件占位符vnode
         if (isDef(vnode.parent)) {
           let ancestor = vnode.parent   //占位符vnode
           const patchable = isPatchable(vnode)
@@ -854,7 +858,7 @@ export function createPatchFunction (backend) {
             for (let i = 0; i < cbs.destroy.length; ++i) {
               cbs.destroy[i](ancestor)
             }
-            //将渲染vnode的dom节点更新到占位符vnode的elm属性上
+            //将渲染vnode的dom节点更新到父组件占位符vnode的elm属性上
             ancestor.elm = vnode.elm
             if (patchable) {
               for (let i = 0; i < cbs.create.length; ++i) {
@@ -873,7 +877,8 @@ export function createPatchFunction (backend) {
             } else {
               registerRef(ancestor)
             }
-            //因为ancestor是一个占位符vnode,占位符vnode是没有parent属性的(渲染vnode才有),所以这里就退出循环
+            //parent属性是当前vnode在父组件中的占位符vnode，所以只有渲染vnode才有
+            //因为ancestor是一个占位符vnode,占位符vnode是没有parent属性的,所以这里就退出循环
             ancestor = ancestor.parent
           }
         }

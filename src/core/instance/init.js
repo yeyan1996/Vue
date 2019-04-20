@@ -35,7 +35,7 @@ export function initMixin (Vue: Class<Component>) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
-      // 初始化组件的options（包括将父组件的占位符节点监听的事件赋值给当前组件）
+      // 初始化组件的options（包括将父组件的监听事件赋值给子组件）
       initInternalComponent(vm, options)
     } else {
       //如果不是一个组件，即main.js声明的根实例，则合并传入构造函数的参数到$options（合并配置）
@@ -92,16 +92,16 @@ export function initInternalComponent (vm: Component, options: InternalComponent
   // 将这个options作为子组件实例的options属性
   const opts = vm.$options = Object.create(vm.constructor.options) // Sub.options
   // doing this because it's faster than dynamic enumeration.
-  // 组件的options会有_parentVnode属性(占位符vnode)(src/core/vdom/create-component.js:218)
+  // 组件的options会有_parentVnode属性(父组件的占位符vnode)(src/core/vdom/create-component.js:245)
   const parentVnode = options._parentVnode
-  //parent是父组件占位符的父组件的实例
+  //parent是父组件的根节点的vm实例（父组件的爸爸）
   opts.parent = options.parent
-  //parentVnode是父组件占位符的vnode
+  //parentVnode是父组件的占位符vnode
   opts._parentVnode = parentVnode
 
   const vnodeComponentOptions = parentVnode.componentOptions
   opts.propsData = vnodeComponentOptions.propsData
-  //将父组件的占位符组件赋值到当前组件的options._parentListeners属性中
+  //将父组件的监听事件，赋值到当前组件options._parentListeners属性中
   opts._parentListeners = vnodeComponentOptions.listeners
   //将组件的children赋值给_renderChildren，用来分配给插槽
   opts._renderChildren = vnodeComponentOptions.children

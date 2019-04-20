@@ -7,7 +7,7 @@ import { extend, warn, isObject } from 'core/util/index'
  */
 //对应编译阶段的genSlot中的"_t"函数（src/compiler/codegen/index.js:498）
 //render函数在执行的过程中遇到插槽会执行renderSlot函数
-//返回占位符节点对应插槽所填入的vnode数组
+//返回父组件对应插槽节点（vnode数组）
 export function renderSlot (
   name: string,
   //默认插槽内容（slot标签的子节点children） `<slot>默认内容</slot>`
@@ -16,7 +16,12 @@ export function renderSlot (
   bindObject: ?Object
 ): ?Array<VNode> {
   //this.$scopedSlots(src/core/instance/render.js:75)
-  //拿到当前作用域插槽,在占位符节点生成的函数
+  //拿到生成放于当前插槽的vnode的函数
+  //@example
+  //  scopedSlots: {
+  //     default: props => createElement('span', props.text)
+  //   },
+  //拿到的是 props => createElement('span', props.text)
   const scopedSlotFn = this.$scopedSlots[name]
   let nodes
   if (scopedSlotFn) { // scoped slot
@@ -34,8 +39,8 @@ export function renderSlot (
     nodes = scopedSlotFn(props) || fallback
   } else {
     //$slots对象（src/core/instance/render-helpers/resolve-slots.js:9）
-    //获取所有插槽集合中，当前插槽所需要填入的vnode数组（占位符节点中对应插槽的vnode数组）
-    //如果子组件提供的插槽,但是占位符没有将插槽需要的节点插入,会进入fallback,渲染子组件插槽中的默认节点
+    //获取所有插槽集合中，当前插槽所需要填入的vnode数组（父组件中对应插槽的vnode数组）
+    //如果子组件提供的插槽,但是父组件没有将插槽需要的节点插入,会进入fallback,渲染子组件插槽中的默认节点
     nodes = this.$slots[name] || fallback
   }
 

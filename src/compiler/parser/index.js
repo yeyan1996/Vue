@@ -546,7 +546,7 @@ function processSlot (el) {
           true
         )
       }
-      //给ast对象定义一个slotScope属性,获取到占位符的slot-scope中的值
+      //给ast对象定义一个slotScope属性,获取到父组件slot-scope中的值
       el.slotScope = slotScope
     }
     //父组件:传入插槽，所以需要在传入到插槽的节点添加slot属性

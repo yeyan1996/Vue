@@ -373,7 +373,7 @@ function genScopedSlots (
   return `scopedSlots:_u([${
     Object.keys(slots).map(key => {
       //key为slot-scope的名字
-      //返回一个对象,key属性为插槽的名字,fn属性为一个函数,返回占位符节点的子节点(插入的vnode)
+      //返回一个对象,key属性为插槽的名字,fn属性为一个函数,返回父组件插入当前插槽的vnode节点
       //@see https://cn.vuejs.org/v2/guide/render-function.html
       return genScopedSlot(key, slots[key], state)
     }).join(',')

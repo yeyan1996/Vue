@@ -232,7 +232,8 @@ export function mountComponent (
 
   // manually mounted instance, call mounted on self
   // mounted is called for render-created child components in its inserted hook
-  //$vnode是占位符vnode，这里指的是没有占位符vnode，即已经是一个根节点了
+  //$vnode是父组件占位符vnode，这里指的是没有占位符vnode
+  //即vm是子组件
   if (vm.$vnode == null) {
     vm._isMounted = true
     // 执行mounted钩子
@@ -246,7 +247,7 @@ export function updateChildComponent (
   vm: Component, //新旧节点共用的vm实例
   propsData: ?Object, //新vnode的props对象
   listeners: ?Object,//新vnode的listeners
-  parentVnode: MountedComponentVNode, //占位符vnode
+  parentVnode: MountedComponentVNode, //父组件占位符vnode
   renderChildren: ?Array<VNode>
 ) {
   if (process.env.NODE_ENV !== 'production') {
@@ -263,7 +264,7 @@ export function updateChildComponent (
     vm.$scopedSlots !== emptyObject // has old scoped slots
   )
 
-  vm.$options._parentVnode = parentVnode //parentVnode为这个组件在父组件作为占位符的vnode
+  vm.$options._parentVnode = parentVnode //parentVnode为这个组件在父组件占位符vnode
   vm.$vnode = parentVnode // update vm's placeholder node without re-render
 
   if (vm._vnode) { // update child tree's parent
@@ -304,8 +305,12 @@ export function updateChildComponent (
   // resolve slots + force update if has children
   //插槽填入的节点的更新
   if (hasChildren) {
+    //对于普通slot，是在父组件渲染再在子组件时中插入的
+    //子组件对于插槽的变化不是响应式的，所以每次插槽节点更新的时候都会通知子组件重新更新插槽（$slots）
     vm.$slots = resolveSlots(renderChildren, parentVnode.context)
-    //通过$forceUpdate,强制渲染视图
+    //更新插槽后需要强制刷新子组件的视图，因为普通插槽最终是在子组件中显示的
+    //重新走一遍render => patch 逻辑
+    //对于keepAlive组件会获得缓存过的vnode
     vm.$forceUpdate()
   }
 
@@ -333,7 +338,7 @@ export function activateChildComponent (vm: Component, direct?: boolean) {
   if (vm._inactive || vm._inactive === null) {
     vm._inactive = false
     for (let i = 0; i < vm.$children.length; i++) {
-      //递归执行所有子组件的activated钩子
+      //递归执行触发子组件的activated钩子(新版本特点)
       activateChildComponent(vm.$children[i])
     }
     callHook(vm, 'activated')
