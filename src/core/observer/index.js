@@ -34,7 +34,7 @@ export function toggleObserving (value: boolean) {
  * object's property keys into getter/setters that
  * collect dependencies and dispatch updates.
  */
-//value满足（127）的定义才会实例化一个observer
+//value满足（139）的定义时,将value对象的所有属性变成响应式的,并添加__ob__属性,值为当前Observer实例
 export class Observer {
   value: any;
   dep: Dep;
@@ -51,7 +51,7 @@ export class Observer {
       if (hasProto) {
         protoAugment(value, arrayMethods)
       } else {
-        //拷贝一个数组的原型(一般用不到)
+        //拷贝一个数组的原型(一般用不到,只有当浏览器不支持__proto__写法,才将所有的拦截后的数组原型放到当前数组中)
         copyAugment(value, arrayMethods, arrayKeys)
       }
       //递归遍历数组将数组的所有元素执行observe方法（将数组内的所有数组/对象元素添加__ob__内部属性）
@@ -79,6 +79,7 @@ export class Observer {
   /**
    * Observe a list of Array items.
    */
+  //传入一个数组,将数组中的元素(对象)变成响应式对象
   observeArray (items: Array<any>) {
     for (let i = 0, l = items.length; i < l; i++) {
       observe(items[i])
@@ -115,8 +116,9 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * returns the new observer if successfully observed,
  * or the existing observer if the value already has one.
  */
+//主要作用是实例化一个Observer
 export function observe (value: any, asRootData: ?boolean): Observer | void {
-  //观察的对象必须是对象，不能是一个vnode
+  //观察的数据必须是对象且不能是一个vnode
   if (!isObject(value) || value instanceof VNode) {
     //不是对象直接返回
     return
@@ -133,6 +135,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
     Object.isExtensible(value) && //必须是可扩展的
     !value._isVue //不能是Vue
   ) {
+    //对value递归调用,将所有的值是对象的属性都变成响应式
     ob = new Observer(value)
   }
   if (asRootData && ob) {
@@ -170,10 +173,12 @@ export function defineReactive (
   if ((!getter || setter) && arguments.length === 2) {
     val = obj[key]
   }
-  //给data/props中的每个属性定义了getter/setter(此时未调用)
-  //如果这个对象的属性值是对象就递归调用,到达底部的时候childOb为undefined,随后到从子再到父级会返回一个内部的ob对象
-  //即childOb存在时,当前键的值是一个对象/数组
-  //observe观察(val)的必须是一个对象/数组
+  // 给data/props中的每个属性定义了getter/setter(此时未调用)
+  // 如果这个对象的属性值仍是对象就递归调用,到达底部的时候childOb为undefined,随后到从子再到父级会返回一个内部的ob对象
+  // 即childOb存在时,当前键的值是一个对象/数组
+  // observe观察(val)的必须是一个对象/数组
+  // val为当前对象的属性值
+  // 如果是数组会对将所有的元素变成响应式
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,
@@ -185,9 +190,13 @@ export function defineReactive (
       if (Dep.target) {
         //给这个dep实例的subs属性添加Dep.target这个watcher，同时给当前栈顶的Dep.target（watcher）的deps添加这个dep实例
         dep.depend()
-        if (childOb) { //非 递归的最底层的逻辑(用于Vue.set?)
-          //给作为对象的子属性值的内部属性__ob__进行收集依赖
+        //属性的值val为对象/数组时含有childOb,为这个对象的__ob__属性
+        if (childOb) {
+          //给当前对象的子属性值的内部属性收集依赖
           childOb.dep.depend()
+          // 如果当前响应式对象的某个属性是数组,会对数组中的元素进行依赖收集
+          // 数组的元素是一个对象,则对这个对象也进行依赖收集
+          // 数组的元素又是数组(多维数组),则递归调用进行依赖收集
           if (Array.isArray(value)) {
             dependArray(value)
           }

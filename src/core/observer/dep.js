@@ -12,7 +12,6 @@ let uid = 0
  */
 //建立数据和watcher之间的桥梁
 export default class Dep {
-  //flow的定义
   static target: ?Watcher;
   id: number;
   subs: Array<Watcher>;

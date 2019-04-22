@@ -82,10 +82,10 @@ export default class Watcher {
     // parse expression for getter
     if (typeof expOrFn === 'function') {
       // 将渲染watcher的getter属性等于updateComponent函数（updateComponent：生成dom节点的函数）
-      //亦或是一个computed的watcher
+      // 亦或是一个computed watcher/user watcher 的回调
       this.getter = expOrFn
     } else {
-      //user watcher会走这个逻辑，watch一个字符串的变化，返回一个函数赋值给this.getter
+      // user watcher会走这个逻辑，watch一个字符串的变化，返回一个函数赋值给this.getter
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
         this.getter = noop
@@ -97,8 +97,10 @@ export default class Watcher {
         )
       }
     }
+    /**实例化的时候就会对watcher进行一次求值,触发回调**/
     this.value = this.lazy
-      ? undefined //computed属性的value为undefined，即第一次的值永远是undefined不会求值
+      //computed属性的value为undefined，即第一次的值永远是undefined不会执行回调求值
+      ? undefined
       //渲染watcher执行get方法,它会执行updateComponent渲染出节点
       //如果是非渲染watcher让value等于get方法返回的值
       //user watcher也会执行get方法
@@ -118,7 +120,8 @@ export default class Watcher {
       //如果是渲染watcher会执行updateComponent函数
       //在执行updateComponent函数时,会执行render方法(src/core/instance/render.js:83),这个时候会触发被劫持后定义的getter函数进行依赖收集
       // 如果是computed watcher会执行它的getter返回一个值作为value
-      // 如果是user watcher会执行parsePath返回的函数（src/core/util/lang.js:34），会先对当前观测的属性求一次值赋值给value（期间会触发依赖收集，将当前key中的dep实例的subs数组添加Dep.target也就是user watcher）
+      // 如果是user watcher会执行parsePath返回的函数（src/core/util/lang.js:34）
+      // 会先对当前观测的属性求一次值赋值给value（期间会触发依赖收集，将当前key中的dep实例的subs数组添加Dep.target也就是user watcher）
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -187,7 +190,7 @@ export default class Watcher {
    * Subscriber interface.
    * Will be called when a dependency changes.
    */
-  //当computed的依赖发生变化的时候会执行update方法
+  //当依赖发生变化的时候会执行update方法
   update () {
     /* istanbul ignore else */
     //如果是computed的watcher
@@ -206,6 +209,7 @@ export default class Watcher {
    * Scheduler job interface.
    * Will be called by the scheduler.
    */
+  //执行watcher保存的回调函数
   run () {
     if (this.active) {
       //对于渲染watcher它的value为undefined

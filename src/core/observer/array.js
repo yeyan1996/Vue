@@ -27,6 +27,7 @@ methodsToPatch.forEach(function (method) {
   const original = arrayProto[method]
   def(arrayMethods, method, /*value的值,这里指修改后的原型方法*/function mutator (/*数组*/...args) {
     const result = original.apply(this, args)
+    //获取__ob__内部属性,里面保存了dep属性
     const ob = this.__ob__
     //定义unshift/splice新增的元素
     let inserted

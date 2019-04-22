@@ -23,19 +23,22 @@ export function def (obj: Object, key: string, val: any, enumerable?: boolean) {
 /**
  * Parse simple path.
  */
-  //parsePath返回一个函数
+  //parsePath传入一个字符串,表示监听的字符串("a.b.c")
 const bailRE = /[^\w.$]/
 export function parsePath (path: string): any {
   if (bailRE.test(path)) {
     return
   }
   const segments = path.split('.')
-  // 如果是user watcher，在this.get()的时候会传入vm，返回这个监听的属性在这个vue实例上的值
+  // 返回一个函数
+  // 如果是user watcher，在this.get()的时候会传入vm作为obj参数，返回这个监听的属性在这个vue实例上的值
+  // 将"a.b.c"转换为["a","b","c"],并且反复求值
   return function (obj) {
     for (let i = 0; i < segments.length; i++) {
       if (!obj) return
-      //这里会触发getter函数(即vm[key])，即收集依赖，订阅这个user watcher
-      // 同时返回观察的属性在vm实例上的值（在watch上定义的属性必须存在与vm实例中才能被观测）
+
+      // 这里会同时触发getter函数(即vm[key])，收集依赖，订阅这个user watcher
+      // 返回最终这个字符串在当前vm实例对应的值
       obj = obj[segments[i]]
     }
     return obj

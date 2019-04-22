@@ -368,7 +368,6 @@ export function stateMixin (Vue: Class<Component>) {
 
   Vue.prototype.$set = set
   Vue.prototype.$delete = del
-
   Vue.prototype.$watch = function (
     expOrFn: string | Function, //一般是监听的属性（字符串）
     cb: any, //handler
