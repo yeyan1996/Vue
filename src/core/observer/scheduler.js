@@ -144,6 +144,7 @@ function callActivatedHooks (queue) {
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
   //一开始has是一个空对象，这里是为了保证同一个watcher实例只触发一次
+  // 对于多次触发同一个watcher,之后的watcher放入队列中
   if (has[id] == null) {
     has[id] = true
     if (!flushing) {

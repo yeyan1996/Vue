@@ -116,7 +116,7 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * returns the new observer if successfully observed,
  * or the existing observer if the value already has one.
  */
-//主要作用是实例化一个Observer
+//主要作用是实例化一个Observer,并且在这个对象中定义一个__ob__属性
 export function observe (value: any, asRootData: ?boolean): Observer | void {
   //观察的数据必须是对象且不能是一个vnode
   if (!isObject(value) || value instanceof VNode) {
@@ -191,8 +191,17 @@ export function defineReactive (
         //给这个dep实例的subs属性添加Dep.target这个watcher，同时给当前栈顶的Dep.target（watcher）的deps添加这个dep实例
         dep.depend()
         //属性的值val为对象/数组时含有childOb,为这个对象的__ob__属性
+        /**
+         * @example
+         * obj:{a:{b:1}}
+         * 其中obj属性的getter保存了一个dep实例,它的值{a:.....,__ob__:.....}中的__ob__又保存了一个dep实例
+         * a属性的getter保存了一个dep实例,它的值{b:...,__ob__:.....}中的__ob__又保存了一个dep实例
+         * b属性的getter保存了一个dep实例,而b的值是一个基本类型所以没有__ob__属性
+         * 它们都是2个dep实例但是保存的watcher是同一个
+         * 这样做是为了能在响应式对象中直接拿到属性getter中保存的watcher
+         * **/
         if (childOb) {
-          //给当前对象的子属性值的内部属性收集依赖
+          //给这个key对应的响应式对象的__ob__属性中(__ob__.dep.subs)添加一个依赖
           childOb.dep.depend()
           // 如果当前响应式对象的某个属性是数组,会对数组中的元素进行依赖收集
           // 数组的元素是一个对象,则对这个对象也进行依赖收集
@@ -204,6 +213,7 @@ export function defineReactive (
       }
       return value
     },
+    //set赋值只针对普通对象,对于数组不会调用,数组的修改依靠的是数组的api,所以需要一个收集派发都能访问到的地方,即数组的__ob__属性
     set: function reactiveSetter (newVal) {
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */

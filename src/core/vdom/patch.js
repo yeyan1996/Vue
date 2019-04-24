@@ -594,7 +594,7 @@ export function createPatchFunction (backend) {
     // note we only do this if the vnode is cloned -
     // if the new node is not cloned it means the render functions have been
     // reset by the hot-reload-api and we need to do a proper re-render.
-    //跳过静态节点,优化更新速度
+    /**跳过静态节点,优化更新速度**/
     if (isTrue(vnode.isStatic) &&
       isTrue(oldVnode.isStatic) &&
       vnode.key === oldVnode.key &&
@@ -608,7 +608,7 @@ export function createPatchFunction (backend) {
     const data = vnode.data
     //如果是组件vnode,执行组件vnode的hook中的prepatch钩子,更新子组件引用到的一些props和事件(src/core/vdom/create-component.js:61)
     if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
-      /**prepatch钩子内会更新props(src/core/vdom/create-component.js:62),同时触发子组件的渲染watcher进行重新渲染**/
+      /**prepatch钩子内只会更新props(src/core/vdom/create-component.js:62),同时触发子组件的渲染watcher进行重新渲染**/
       i(oldVnode, vnode)
     }
      //组件children为空数组
@@ -623,7 +623,7 @@ export function createPatchFunction (backend) {
     if (isUndef(vnode.text)) {
       //如果新旧节点的vnode都不是组件vnode
       if (isDef(oldCh) && isDef(ch)) {
-        //新旧vnode都有子节点且子节点不同,则执行diff算法
+        //新旧vnode都有子节点且子节点不同,则执行diff算法(组件没有子节点)
         if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
       } else if (isDef(ch)) { //只有新节点有子节点,则插入新的vnode的子节点
         if (process.env.NODE_ENV !== 'production') {

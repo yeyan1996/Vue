@@ -108,6 +108,7 @@ export function parse (
     }
   }
 
+  //html解析器
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
