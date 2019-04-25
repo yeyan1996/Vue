@@ -253,7 +253,6 @@ export function parse (
       currentParent = stack[stack.length - 1]
       closeElement(element)
     },
-
     //文本节点的钩子，处理文本节点
     chars (text: string) {
       if (!currentParent) {

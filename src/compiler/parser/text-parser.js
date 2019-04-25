@@ -45,6 +45,7 @@ export function parseText (
     //放入一个变量转换的词法单元
     tokens.push(`_s(${exp})`)
     rawTokens.push({ '@binding': exp })
+    //通过lastIndex控制下次循环的起点
     lastIndex = index + match[0].length
   }
   if (lastIndex < text.length) {

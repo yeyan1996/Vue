@@ -777,6 +777,7 @@ export function createPatchFunction (backend) {
   //只有当组件更新/根实例创建的时候会有oldVnode,组件创建没有oldVnode
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
     if (isUndef(vnode)) {
+      //执行vnode的组件钩子destroy,删除节点
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
       return
     }

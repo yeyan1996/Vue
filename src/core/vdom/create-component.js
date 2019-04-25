@@ -104,7 +104,7 @@ const componentVNodeHooks = {
       if (!vnode.data.keepAlive) {
         componentInstance.$destroy()
       } else {
-        ////keepalive包裹的子组件不会执行destroy钩子，相反会触发deavtivated钩子
+        //keepalive包裹的子组件不会执行destroy钩子，相反会触发deavtivated钩子
         deactivateChildComponent(componentInstance, true /* direct */)
       }
     }

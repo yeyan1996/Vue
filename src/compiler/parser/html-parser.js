@@ -64,7 +64,7 @@ export function parseHTML (html, options) {
   while (html) {
     last = html
     // Make sure we're not in a plaintext content element like script/style
-    //父元素不能是一个纯文本内容（script/style/textarea）
+    //正常标签(纯文本内容标签)
     if (!lastTag || !isPlainTextElement(lastTag)) {
       //textEnd会匹配"<"符号的位置
       let textEnd = html.indexOf('<')
@@ -92,7 +92,7 @@ export function parseHTML (html, options) {
           }
         }
 
-        //判断浏览器环境的注释(<!--[if !IE]>-->)不会执行任何钩子，保留
+        //判断浏览器环境的注释(<!--[if !IE]>-->)不会执行任何钩子，并且保留注释
         // http://en.wikipedia.org/wiki/Conditional_comment#Downlevel-revealed_conditional_comment
         if (conditionalComment.test(html)) {
           const conditionalEnd = html.indexOf(']>')
@@ -121,7 +121,9 @@ export function parseHTML (html, options) {
         }
 
         // Start tag:
-        //startTagMatch返回一个attrs属性，保存当前开始标签的每个属性match正则后返回的值（数组）组成的二维数组
+        // 匹配开始标签
+
+        //startTagMatch返回一个对象,含有一个tagName,attrs属性，attrs保存当前开始标签的每个属性match正则后返回的值（数组）组成的二维数组
         //以及tagName，end/start的位置
         const startTagMatch = parseStartTag()
         if (startTagMatch) {
@@ -138,9 +140,9 @@ export function parseHTML (html, options) {
 
       //文本节点/换行符
       if (textEnd >= 0) {
-        //rest为下个"<"符号到结束的模版字符串
+        //rest为"<"符号到结束的模版字符串
         rest = html.slice(textEnd)
-        //判断rest是否是一个标签作为开头(而不是文本节点中含有"<"字符串)
+        //判断rest是否符合任何需要被解析的片段的类型(开始,闭合,注释,条件注释)
         while (
           !endTag.test(rest) &&
           !startTagOpen.test(rest) &&
@@ -148,7 +150,7 @@ export function parseHTML (html, options) {
           !conditionalComment.test(rest)
         ) {
           // < in plain text, be forgiving and treat it as text
-          //处理在文本节点中的"<"符号，vue会把他当作一个文本继续往前选择文本节点
+          //都不是则处理在文本节点中的"<"符号，vue会把他当作一个文本继续往前选择文本节点
           next = rest.indexOf('<', 1)
           if (next < 0) break
           textEnd += next
@@ -169,6 +171,7 @@ export function parseHTML (html, options) {
         options.chars(text)
       }
     } else {
+      //纯文本内容标签（script/style/textarea）
       let endTagLength = 0
       const stackedTag = lastTag.toLowerCase()
       const reStackedTag = reCache[stackedTag] || (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'))
@@ -222,7 +225,7 @@ export function parseHTML (html, options) {
       }
       advance(start[0].length)
       let end, attr
-      //匹配当前标签的所有属性
+      //匹配当前标签的所有属性,每匹配一个html解析器向前移动一部分,直到匹配完所有属性
       while (/*尝试匹配">"并赋值给end*/!(end = html.match(startTagClose)) && (attr = html.match(attribute))) {
         //依次前进
         advance(attr[0].length)
