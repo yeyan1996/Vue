@@ -71,6 +71,9 @@ export default class Watcher {
     this.id = ++uid // uid for batching
     this.active = true
     //dirty属性和lazy保持同步
+    //computed watcher才有dirty
+    // 当dirty为true时computed watcher才会重新计算
+    // 当dirty为false会直接使用缓存
     this.dirty = this.lazy // for lazy watchers
     this.deps = []
     this.newDeps = []
@@ -97,7 +100,7 @@ export default class Watcher {
         )
       }
     }
-    /**实例化的时候就会对watcher进行一次求值,触发回调**/
+    /**实例化的时候就会对非computed watcher进行一次求值,触发回调**/
     this.value = this.lazy
       //computed属性的value为undefined，即第一次的值永远是undefined不会执行回调求值
       ? undefined
@@ -117,10 +120,12 @@ export default class Watcher {
     let value
     const vm = this.vm
     try {
-      //如果是渲染watcher会执行updateComponent函数
-      //在执行updateComponent函数时,会执行render方法(src/core/instance/render.js:83),这个时候会触发被劫持后定义的getter函数进行依赖收集
-      // 如果是computed watcher会执行它的getter返回一个值作为value
-      // 如果是user watcher会执行parsePath返回的函数（src/core/util/lang.js:34）
+      // 渲染watcher会执行updateComponent函数
+      // 在执行updateComponent函数时,会执行render方法(src/core/instance/render.js:83),这个时候会触发被劫持后定义的getter函数进行依赖收集
+
+      // computed watcher会执行它的getter返回一个值作为value
+
+      // user watcher会执行parsePath返回的函数（src/core/util/lang.js:34）
       // 会先对当前观测的属性求一次值赋值给value（期间会触发依赖收集，将当前key中的dep实例的subs数组添加Dep.target也就是user watcher）
       value = this.getter.call(vm, vm)
     } catch (e) {
@@ -154,6 +159,7 @@ export default class Watcher {
       //给newDepIds和newDeps属性添加dep的id和自身
       this.newDepIds.add(id)
       this.newDeps.push(dep)
+      //防止添加多余的dep
       if (!this.depIds.has(id)) {
         //如果即不存在于newDep也不存在于dep就执行addSub,将这个watcher实例添加到传入的dep参数的subs属性(数组)中
         dep.addSub(this)
@@ -190,14 +196,12 @@ export default class Watcher {
    * Subscriber interface.
    * Will be called when a dependency changes.
    */
-  //当依赖发生变化的时候会执行update方法
+  //当watcher的依赖发生变化的时候会执行update方法
   update () {
     /* istanbul ignore else */
-    //如果是computed的watcher
-    if (this.lazy) {
+    if (this.lazy) { //computed watcher
       this.dirty = true
-      //如果user watcher设置了sync属性会在nextTick前就执行回调
-    } else if (this.sync) {
+    } else if (this.sync) {  //user watcher如果设置了sync属性会在nextTick前就执行回调
       this.run()
     } else {
       //渲染watcher一般会走到这里，传入当前watcher实例，会在vue自定义的nextTick后异步更新队列
@@ -258,10 +262,11 @@ export default class Watcher {
   /**
    * Depend on all deps collected by this watcher.
    */
+  //一般只有计算属性的watcher才可以收集依赖(收集当前栈顶的Dep.target)
   depend () {
     let i = this.deps.length
     while (i--) {
-      //获取computed属性触发getter函数的时候会执行这个逻辑,这里会存在一个渲染watcher,相当于渲染watcher订阅了这个computed属性的变化
+      // 给computed watcher内部的保存的发布者(在之前evaluate时保存的dep)收集当前栈顶的watcher(可能是渲染watcher)
       this.deps[i].depend()
     }
   }

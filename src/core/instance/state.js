@@ -195,9 +195,8 @@ function initComputed (vm: Component, computed: Object) {
     //true
     if (!isSSR) {
       // create internal watcher for the computed property.
-      //给每个computed的属性创建一个watcher实例保存在watchers对象中
+      //给每个computed的属性创建一个computed watcher保存在watchers对象中
       //watchers和_computedWatcher因为是同一个内存地址所以也会映射到_computedWatcher中
-      //返回一个computed watcher
       watchers[key] = new Watcher(
         vm,
         getter || noop,
@@ -236,7 +235,7 @@ export function defineComputed (
       ? createComputedGetter(key)
       : createGetterInvoker(userDef)
     sharedPropertyDefinition.set = noop
-  } else {
+  } else { // computed属性对象的写法(get/set)
     sharedPropertyDefinition.get = userDef.get
       ? shouldCache && userDef.cache !== false
         ? createComputedGetter(key)
@@ -263,12 +262,21 @@ function createComputedGetter (key) {
     //这里获取了当前属性的watcher实例
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
-      //dirty=lazy这里为true
+      // 第一次读取computed属性dirty为true,之后都为false,直接使用第一次的缓存
+      // 在更新视图时会调用render函数重新求值,对于computed属性的依赖项(发布者)没有更新的话,不会重新求值
+
+      // 当视图依赖的computed属性的依赖项被修改了,会通知computed watcher和render watcher,computed watcher会开始更新(dirty = true)
+      // render watcher中的render函数会重新收集依赖,当收集到computed属性时,会执行下面的语句重新求值
       if (watcher.dirty) {
-        //执行计算，执行后watcher实例的value属性的值为计算后的新值
+        // 执行计算,将计算属性内部所依赖的属性(发布者dep),收集当前栈顶的watcher(computed watcher)
+        // 此时watcher.value有值
+        // 随后computed watcher被弹出
         watcher.evaluate()
       }
-      //这个时候Dep.target为computed watcher，给watcher的deps属性的每个dep的subs属性添加Dep.target这个watcher
+      // 这个时候栈顶Dep.target不是computed watcher(因为上一步evaluate已经被弹出了)
+      // 此时给computed watcher收集当前栈顶的watcher(如果被模板依赖则收集渲染watcher)
+
+      // 最后计算属性的依赖项(发布者dep)会保存2个订阅者(computed watcher , render watcher(如果被模板依赖))
       if (Dep.target) {
         watcher.depend()
       }
