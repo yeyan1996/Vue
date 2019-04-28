@@ -195,8 +195,8 @@ function initComputed (vm: Component, computed: Object) {
     //true
     if (!isSSR) {
       // create internal watcher for the computed property.
-      //给每个computed的属性创建一个computed watcher保存在watchers对象中
-      //watchers和_computedWatcher因为是同一个内存地址所以也会映射到_computedWatcher中
+      // 给每个computed的属性创建一个computed watcher保存在watchers对象中
+      // 此时没有求值,只是初始化computed watcher
       watchers[key] = new Watcher(
         vm,
         getter || noop,
@@ -208,7 +208,8 @@ function initComputed (vm: Component, computed: Object) {
     // component-defined computed properties are already defined on the
     // component prototype. We only need to define computed properties defined
     // at instantiation here.
-    //这里为false因为computed的属性这个时候已经在vm实例的原型上定义了（src/core/global-api/extend.js:57）
+    // 这里为false因为computed的属性这个时候已经在vm实例的原型上定义了（src/core/global-api/extend.js:57）
+    // 对于组件已经提前在生成组件构造器的时候创建好computed/props属性了
     if (!(key in vm)) {
       //定义computed对象key属性的getter函数
       defineComputed(vm, key, userDef)
@@ -255,28 +256,35 @@ export function defineComputed (
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
+//当别的watcher的依赖项含有当前计算属性会触发这个计算属性的getter
+
 function createComputedGetter (key) {
-  //返回当前computed属性的getter函数
+  // 返回当前computed属性的getter函数
+  // 只有当某个地方使用到了计算属性才会触发getter(模板收集依赖/其他computed函数里依赖了这个计算属性)
   return function computedGetter () {
     //当尝试访问computed属性会触发getter执行下面的逻辑
     //这里获取了当前属性的watcher实例
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
-      // 第一次读取computed属性dirty为true,之后都为false,直接使用第一次的缓存
-      // 在更新视图时会调用render函数重新求值,对于computed属性的依赖项(发布者)没有更新的话,不会重新求值
+      // 当视图依赖的computed属性的依赖项被修改了,会先通知自身内部的computed函数求值,给依赖项的dep属性添加栈顶的computed watcher(自身)
+      // 执行到computed watcher的回调时会将dirty置为true
+      // 执行到render watcher的回调时(更新视图),会收集模板的依赖,随后再次遇到计算属性触发getter,此时dirty为true,执行evaluate求值
 
-      // 当视图依赖的computed属性的依赖项被修改了,会通知computed watcher和render watcher,computed watcher会开始更新(dirty = true)
-      // render watcher中的render函数会重新收集依赖,当收集到computed属性时,会执行下面的语句重新求值
+      // 在更新视图时会调用render函数重新收集依赖,对于computed属性的依赖项(发布者)没有更新的话,不会重新求值
+      // (只有计算属性的依赖项触发的setter才会去触发computed watcher + render watcher)
       if (watcher.dirty) {
         // 执行计算,将计算属性内部所依赖的属性(发布者dep),收集当前栈顶的watcher(computed watcher)
         // 此时watcher.value有值
-        // 随后computed watcher被弹出
+        // 随后computed watcher被弹出,dirty置为false
         watcher.evaluate()
       }
-      // 这个时候栈顶Dep.target不是computed watcher(因为上一步evaluate已经被弹出了)
-      // 此时给computed watcher收集当前栈顶的watcher(如果被模板依赖则收集渲染watcher)
 
-      // 最后计算属性的依赖项(发布者dep)会保存2个订阅者(computed watcher , render watcher(如果被模板依赖))
+      // 这个时候如果dirty = true 则栈顶Dep.target不是computed watcher(因为上一步evaluate已经被弹出了)
+      // 此时给计算属性的依赖项(依赖项保存的发布者dep)收集当前栈顶的watcher(如果被模板依赖则收集渲染watcher)
+      // 最后计算属性的依赖项(依赖项保存的发布者dep)会保存2个订阅者(computed watcher , render watcher(如果被模板依赖))
+
+      // depend是computed watcher独有的方法,给计算属性的依赖项(响应式变量内部的dep属性)都添加当前栈顶的watcher
+      // computed watcher中既可以通知内部的响应式变量(dep)收集依赖,又可以被其他dep收集
       if (Dep.target) {
         watcher.depend()
       }

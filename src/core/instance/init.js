@@ -64,7 +64,7 @@ export function initMixin (Vue: Class<Component>) {
     //执行beforeCreate钩子（这个钩子执行的时候initState还没执行没有data等一系列属性）
     callHook(vm, 'beforeCreate')
     initInjections(vm) // resolve injections before data/props
-    //初始化vue构造函数的属性(prop,data,methods,computed,watch)
+    // 初始化vue构造函数的属性(prop,data,methods,computed,watch)
     initState(vm)
     initProvide(vm) // resolve provide after data/props
     //执行created钩子（在上面initState函数执行后，即有了data,methods......一系列数据后）

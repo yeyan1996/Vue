@@ -199,7 +199,7 @@ export default class Watcher {
   //当watcher的依赖发生变化的时候会执行update方法
   update () {
     /* istanbul ignore else */
-    if (this.lazy) { //computed watcher
+    if (this.lazy) { //computed watcher只做一件事就是把dirty = true,在下个watcher触发计算属性的getter时再执行更新
       this.dirty = true
     } else if (this.sync) {  //user watcher如果设置了sync属性会在nextTick前就执行回调
       this.run()
