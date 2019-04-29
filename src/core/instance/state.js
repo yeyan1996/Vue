@@ -105,6 +105,8 @@ function initProps (vm: Component, propsOptions: Object) {
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
+    // 代理props(组件的代理在Vue.extend时,并非在这里)
+    // 组件代理:src/core/global-api/extend.js:102
     if (!(key in vm)) {
       proxy(vm, `_props`, key)
     }

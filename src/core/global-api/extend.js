@@ -68,6 +68,11 @@ export function initExtend (Vue: GlobalAPI) {
 
     // create asset registers, so extended classes
     // can have their private assets too.
+
+    //   ASSET_TYPES合并
+    //   'component',
+    //   'directive',
+    //   'filter'
     ASSET_TYPES.forEach(function (type) {
       Sub[type] = Super[type]
     })
@@ -94,6 +99,7 @@ export function initExtend (Vue: GlobalAPI) {
 function initProps (Comp) {
   const props = Comp.options.props
   for (const key in props) {
+    //代理props到_props上(vm.<prop> = vm._props.<prop>)
     proxy(Comp.prototype, `_props`, key)
   }
 }

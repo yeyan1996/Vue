@@ -13,8 +13,10 @@ const idToTemplate = cached(id => {
   const el = query(id)
   return el && el.innerHTML
 })
-// 缓存了之前定义的mount(不同版本?)
+// 缓存了运行时版本定义的mount
 const mount = Vue.prototype.$mount
+
+// 完整构建版本的$mount(没有render函数会调用编译,最后运行运行时版本的mount函数)
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
@@ -39,7 +41,7 @@ Vue.prototype.$mount = function (
     if (template) {
       // 当template是字符串的时候(一般写的template模板字符串都会进入这个逻辑)
       if (typeof template === 'string') {
-        //第一个字符串是不是#,一般为false
+        //当template是以#开头,Vue会将它认为是一个id选择器,在HTML中寻找响应的DOM元素(一般为false)
         if (template.charAt(0) === '#') {
           template = idToTemplate(template)
           /* istanbul ignore if */
@@ -69,12 +71,14 @@ Vue.prototype.$mount = function (
         mark('compile')
       }
 
+      /**没有render函数Vue会调用编译器从template中生成render函数*/
       //compileToFunctions定义在src/compiler/to-function.js:23
       const { render, staticRenderFns } = compileToFunctions(template, {
         shouldDecodeNewlines,
         shouldDecodeNewlinesForHref,
         delimiters: options.delimiters,
         comments: options.comments
+
       }, this)
       options.render = render
       options.staticRenderFns = staticRenderFns
