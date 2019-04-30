@@ -400,11 +400,13 @@ export function createPatchFunction (backend) {
     }
   }
 
+  //删除vnode
   function removeVnodes (parentElm, vnodes, startIdx, endIdx) {
     for (; startIdx <= endIdx; ++startIdx) {
       const ch = vnodes[startIdx]
       if (isDef(ch)) {
         if (isDef(ch.tag)) {
+          //执行vnode的remove钩子和destroy钩子
           removeAndInvokeRemoveHook(ch)
           invokeDestroyHook(ch)
         } else { // Text node
@@ -642,6 +644,7 @@ export function createPatchFunction (backend) {
       nodeOps.setTextContent(elm, vnode.text)
     }
     if (isDef(data)) {
+      //每次patch结束后触发postpatch钩子(自定义指令的钩子)
       if (isDef(i = data.hook) && isDef(i = i.postpatch)) i(oldVnode, vnode)
     }
   }

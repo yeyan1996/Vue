@@ -2,6 +2,7 @@
 
 const validDivisionCharRE = /[\w).+\-_$\]]/
 
+//过滤器解析器
 export function parseFilters (exp: string): string {
   let inSingle = false
   let inDouble = false
@@ -84,12 +85,15 @@ export function parseFilters (exp: string): string {
   return expression
 }
 
+//用过滤器代码包裹表达式
 function wrapFilter (exp: string, filter: string): string {
+  //判断是否携带过滤器参数({{ x | filter1("123") }})
   const i = filter.indexOf('(')
   if (i < 0) {
     // _f: resolveFilter
     return `_f("${filter}")(${exp})`
   } else {
+    //带参数的过滤器
     const name = filter.slice(0, i)
     const args = filter.slice(i + 1)
     return `_f("${name}")(${exp}${args !== ')' ? ',' + args : args}`

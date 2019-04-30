@@ -430,7 +430,7 @@ export function mergeOptions (
  * This function is used because child instances need access
  * to assets defined in its ancestor chain.
  */
-//传进来的options有2中（父类Vue.options/子类options）
+//type为资源类型:指令/组件/过滤器,传进来的options会有2种（父类Vue.options/子类options）
 export function resolveAsset (
   options: Object,
   type: string,

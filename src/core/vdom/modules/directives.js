@@ -18,6 +18,7 @@ function updateDirectives (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   }
 }
 
+//更新自定义指令,在vnode的3个生命周期内都会触发(create,update,destroy)
 function _update (oldVnode, vnode) {
   const isCreate = oldVnode === emptyNode
   const isDestroy = vnode === emptyNode
@@ -53,7 +54,8 @@ function _update (oldVnode, vnode) {
         callHook(dirsWithInsert[i], 'inserted', vnode, oldVnode)
       }
     }
-    if (isCreate) {
+    if (isCreate) { //true
+      //当触发了vnode的insert钩子时触发自定义指令的inserted钩子
       mergeVNodeHook(vnode, 'insert', callInsert)
     } else {
       callInsert()

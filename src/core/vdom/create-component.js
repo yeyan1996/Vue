@@ -58,7 +58,7 @@ const componentVNodeHooks = {
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
- //给子组件传值的时候,父组件数据变化会通过prepatch钩子通知子组件数据变化(src/core/vdom/patch.js:596执行prepatch)
+ //给子组件传值的时候,父组件数据变化会通过prepatch钩子通知子组件数据变化(src/core/vdom/patch.js:612执行prepatch)
   prepatch (oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
     const options = vnode.componentOptions
     /**prepatch时,新节点和旧节点使用的是相同的vm实例,新节点会复用旧节点中所有的数据**/
