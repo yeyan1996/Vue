@@ -199,9 +199,11 @@ export default class Watcher {
   //当watcher的依赖发生变化的时候会执行update方法
   update () {
     /* istanbul ignore else */
-    if (this.lazy) { //computed watcher只做一件事就是把dirty = true,在下个watcher触发计算属性的getter时再执行更新
+    //computed watcher只做一件事就是把dirty = true,在下个watcher触发计算属性的getter时再执行更新
+    /**computed watcher并不会延迟到nextTick执行**/
+    if (this.lazy) {
       this.dirty = true
-    } else if (this.sync) {  //user watcher如果设置了sync属性会在nextTick前就执行回调
+    } else if (this.sync) {  //user watcher如果设置了sync属性也会立即执行,不会延迟到nextTick后
       this.run()
     } else {
       //渲染watcher一般会走到这里，传入当前watcher实例，会在vue自定义的nextTick后异步更新队列
