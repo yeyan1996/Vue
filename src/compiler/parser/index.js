@@ -648,6 +648,7 @@ function processAttrs (el) {
         }
       }
     } else {
+      // 非vue指令的属性，即静态的属性（<comp prop="prop">）
       // literal attribute
       if (process.env.NODE_ENV !== 'production') {
         const res = parseText(value, delimiters)
@@ -660,6 +661,7 @@ function processAttrs (el) {
           )
         }
       }
+      //会调用JSON.stringify在字符串的基础上再包裹一层字符串
       addAttr(el, name, JSON.stringify(value))
       // #6887 firefox doesn't update muted state if set via attribute
       // even immediately after element creation

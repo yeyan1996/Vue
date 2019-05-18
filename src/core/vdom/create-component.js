@@ -49,6 +49,7 @@ const componentVNodeHooks = {
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
       //createComponentInstanceForVnode通过调用子组件的构造器返回子组件的实例
+      // （会触发Vue.init，并且触发beforeCreate和created两个生命周期）
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         //实例
@@ -115,6 +116,7 @@ const hooksToMerge = Object.keys(componentVNodeHooks)
 
 //创建组件vnode
 export function createComponent (
+  //Ctor可能是一个组件配置项（对象），可能是一个组件构造器，可能是一个异步组件（函数，返回import()）
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
   context: Component, //vm实例
@@ -147,11 +149,13 @@ export function createComponent (
 
   // async component
   let asyncFactory
+
+  //当找不到cid时，为异步组件，解析异步组件
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
-    //解析异步组件
+    // 当第二次进入时，异步组件被解析成功直接返回组件构造器
     Ctor = resolveAsyncComponent(asyncFactory, baseCtor, context)
-    //如果非高级组件，创建一个空的注释节点占位
+    //如果非高级组件，第一次创建一个空的注释节点占位
     if (Ctor === undefined) {
       // return a placeholder node for async component, which is rendered
       // as a comment node but preserves all the raw information for the node.
@@ -256,11 +260,12 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
-  // componentOptions即传入vnode类的第6个构造函数（209）
+  // componentOptions即传入vnode类的第6个参数（221）
   // 和new Vue类似,但是这里换成在框架内部被动的实例化vm
   // 这里等于new Ctor(options),等于执行了内部的_init方法(src/core/global-api/extend.js:38) Ctor=>Counstructor
   // 即调用了Vue._init方法(但是某些参数会有改变,多了_isComponent,parent,_parentVnode3个属性)
-  //同时返回了一个子组件的实例
+  // 同时返回了一个子组件的实例
+  /**在执行Vue._init方法时，因为使用new关键字调用的构造函数，所以已经创建好了最初的vm实例**/
   return new vnode.componentOptions.Ctor(options)
 }
 

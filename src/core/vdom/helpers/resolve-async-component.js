@@ -37,8 +37,9 @@ export function createAsyncPlaceholder (
   return node
 }
 
+//解析异步组件
 export function resolveAsyncComponent (
-  factory: Function,
+  factory: Function, //promise的异步组件 factory 为 () => import (.....)
   baseCtor: Class<Component>,
   context: Component
 ): Class<Component> | void {
@@ -46,6 +47,8 @@ export function resolveAsyncComponent (
     return factory.errorComp
   }
 
+  // 当通过$forceUpdate再次进入到 resolveAsyncComponent 函数时，由于异步组件以及被解析，所以会有 resolved 方法
+  // 直接返回（81）中的组件构造器
   if (isDef(factory.resolved)) {
     return factory.resolved
   }
@@ -71,13 +74,14 @@ export function resolveAsyncComponent (
       }
     }
     //once只执行一次
+    /**以下代码会等到异步组件获取到后，在微任务队列中执行**/
     const resolve = once((res: Object | Class<Component>) => {
       // cache resolved
-      //ensureCtor将res(通过import()导入的异步组件的options)解析为异步组件的构造器
+      // ensureCtor将res(通过import()导入的异步组件的options)解析为异步组件的构造器
       factory.resolved = ensureCtor(res, baseCtor)
       // invoke callbacks only if this is not a synchronous resolve
       // (async resolves are shimmed as synchronous during SSR)
-      //强制刷新识图创建组件（forceRender函数会再次执行resolveAsyncComponent这个函数）
+      // 强制刷新视图创建组件（forceRender函数会再次执行resolveAsyncComponent这个函数）
       if (!sync) {
         forceRender(true)
       }
@@ -100,7 +104,8 @@ export function resolveAsyncComponent (
     if (isObject(res)) {
       if (typeof res.then === 'function') {
         // () => Promise
-        //第一次factory.resolved是没有定义的，所以将这个异步的Promise用then方法加入回调传入resolve,reject2个函数等Promise决议后执行
+        // 第一次factory.resolved是没有定义的
+        // 所以给promise.then传入resolve,reject2个函数等Promise决议后执行回调
         if (isUndef(factory.resolved)) {
           res.then(resolve, reject)
         }
@@ -143,9 +148,9 @@ export function resolveAsyncComponent (
 
     sync = false
     // return in case resolved synchronously
-    //异步组件返回一个Undefined
+    // 异步组件返回一个Undefined
     return factory.loading
       ? factory.loadingComp //渲染一个loading组件
-      : factory.resolved
+      : factory.resolved // 返回undefined时会先渲染一个注释节点
   }
 }
