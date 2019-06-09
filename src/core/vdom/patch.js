@@ -81,7 +81,7 @@ export function createPatchFunction (backend) {
 
 
   for (i = 0; i < hooks.length; ++i) {
-    //cbs保存着所有生命周期的所有回调（35），每个生命周期对应的是一个回调数组
+    //cbs保存着所有vnode钩子所保存的回调（35），每个钩子对应的是一个回调数组
     cbs[hooks[i]] = []
     for (j = 0; j < modules.length; ++j) {
       if (isDef(modules[j][hooks[i]])) {
@@ -406,8 +406,9 @@ export function createPatchFunction (backend) {
       const ch = vnodes[startIdx]
       if (isDef(ch)) {
         if (isDef(ch.tag)) {
-          //执行vnode的remove钩子和destroy钩子
+          // 执行vnode的remove钩子
           removeAndInvokeRemoveHook(ch)
+          // 执行组件的 destroy 钩子
           invokeDestroyHook(ch)
         } else { // Text node
           removeNode(ch.elm)

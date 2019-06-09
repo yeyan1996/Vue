@@ -73,7 +73,7 @@ function updateDOMListeners (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   if (isUndef(oldVnode.data.on) && isUndef(vnode.data.on)) {
     return
   }
-  //这里的on代表了原生的监听事件,因为在src/core/vdom/create-component.js:182做了一层处理,将组件的监听事件保存在listeners中
+  //这里的on代表了原生的监听事件,因为在src/core/vdom/create-component.js:193做了一层处理,将组件的监听事件保存在listeners中
   const on = vnode.data.on || {}
   const oldOn = oldVnode.data.on || {}
   target = vnode.elm

@@ -217,7 +217,7 @@ export function createComponent (
 
   // return a placeholder vnode
   const name = Ctor.options.name || tag
-  //实例化vnode，第3，4，5参数为空（children,text,elm）
+  //实例化占位符vnode，第3，4，5参数为空（children,text,elm）
   const vnode = new VNode(
     // 组件vnode的tag名和一般的不一样（方便调试）
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,

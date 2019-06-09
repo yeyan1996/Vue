@@ -76,8 +76,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // based on the rendering backend used.
     if (!prevVnode) {
       // initial render
-      /** 生成真实的dom节点保存在$el属性中(src/core/vdom/patch.js:748) **/
-
+      /** 生成真实的dom节点保存在$el属性中(src/core/vdom/patch.js:781) **/
       vm.$el = vm.__patch__(/*第一次渲染这个值为undefined*/vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
@@ -250,6 +249,8 @@ export function updateChildComponent (
   parentVnode: MountedComponentVNode, //父组件占位符vnode
   renderChildren: ?Array<VNode>
 ) {
+  // 设置 isUpdatingChildComponent 使得在子组件的 props 中触发额外定义的 setter 时(防止修改单项数据流)
+  // 能够确保是父组件更新的 props
   if (process.env.NODE_ENV !== 'production') {
     isUpdatingChildComponent = true
   }
@@ -285,6 +286,7 @@ export function updateChildComponent (
     const propKeys = vm.$options._propKeys || []
     for (let i = 0; i < propKeys.length; i++) {
       const key = propKeys[i]
+      // 获取到 vm 实例 props 的配置项（只包含定义时的配置项，不会拥有运行时的值）
       const propOptions: any = vm.$options.props // wtf flow?
       //将新的props值赋值给子组件(<hello-world :flag="flag"></hello-world>)
       /**赋值时会触发对应key的setter函数,执行dep实例的notify方法,最后触发子组件的渲染watcher的update方法渲染视图**/

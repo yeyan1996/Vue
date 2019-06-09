@@ -40,6 +40,7 @@ export function resolveInject (inject: any, vm: Component): ?Object {
   if (inject) {
     // inject is :any because flow is not smart enough to figure out cached
     const result = Object.create(null)
+    // provide/inject 支持 Symbol 作为属性
     const keys = hasSymbol
       ? Reflect.ownKeys(inject).filter(key => {
         /* istanbul ignore next */
@@ -51,6 +52,7 @@ export function resolveInject (inject: any, vm: Component): ?Object {
       const key = keys[i]
       const provideKey = inject[key].from
       let source = vm
+      // 循环向上找含有当前 provideKey 的组件
       while (source) {
         if (source._provided && hasOwn(source._provided, provideKey)) {
           result[key] = source._provided[provideKey]
