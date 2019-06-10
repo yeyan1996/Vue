@@ -114,7 +114,8 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
-//创建组件vnode
+// 这个 createComponent 函数是用来创建组件 vnode
+// 而 patch 中的 createComponent 函数（src/core/vdom/patch.js:228）是用来将组件 vnode 生成真实 DOM
 export function createComponent (
   //Ctor可能是一个组件配置项（对象），可能是一个组件构造器，可能是一个异步组件（函数，返回import()）
   Ctor: Class<Component> | Function | Object | void,

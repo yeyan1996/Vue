@@ -103,7 +103,8 @@ export function initInternalComponent (vm: Component, options: InternalComponent
   opts.propsData = vnodeComponentOptions.propsData
   //将父组件的监听事件，赋值到当前组件options._parentListeners属性中
   opts._parentListeners = vnodeComponentOptions.listeners
-  //将组件的children赋值给_renderChildren，用来分配给插槽
+  // 将父组件的插槽节点赋值给子组件的 $options
+  // 组件是没有 children 属性的，这里的 children 属性保存在 vnode.componentOptions.children 中
   opts._renderChildren = vnodeComponentOptions.children
   opts._componentTag = vnodeComponentOptions.tag
 

@@ -93,7 +93,7 @@ function genHandler (
     return `[${handler.map(handler => genHandler(name, handler)).join(',')}]`
   }
 
-  //匹配abc/a.b/a["b"]/a['b'],一般书写的函数名都会匹配成功,但不匹配函数调用abc($event)
+  //匹配abc / a.b / a["b"] / a['b'],一般书写的函数名都会匹配成功,但不匹配函数调用如 abc($event)
   const isMethodPath = simplePathRE.test(handler.value)
   //匹配function(){...} / ()=>{....}等的函数表达式
   const isFunctionExpression = fnExpRE.test(handler.value)

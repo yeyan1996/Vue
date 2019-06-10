@@ -56,7 +56,7 @@ function markStatic (node: ASTNode) {
       //递归遍历所有子节点尝试标记static
       markStatic(child)
       if (!child.static) {
-        //只要有当前节点有个子节点不是静态的,那这个节点不是静态的
+        /**只要有当前节点有个子节点不是静态的,那这个节点不是静态的*/
         node.static = false
       }
     }
