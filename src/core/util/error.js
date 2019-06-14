@@ -27,6 +27,9 @@ export function handleError (err: Error, vm: any, info: string) {
   globalHandleError(err, vm, info)
 }
 
+/**2.6会新加入 Promise 捕获**/
+
+
 //调用全局捕获错误的函数
 function globalHandleError (err, vm, info) {
   if (config.errorHandler) {

@@ -97,6 +97,8 @@ export default {
       // check pattern
       const name: ?string = getComponentName(componentOptions)
       const { include, exclude } = this
+
+      // 如果这个 vnode 是一个不能被缓存的情况，则直接返回 vnode
       if (
         // not includedkeys
         (include && (!name || !matches(include, name))) ||
@@ -106,6 +108,8 @@ export default {
         return vnode
       }
 
+      // 否则尝试使用缓存中 vnode 的 componentInstance （保存着旧数据的 vm 实例）
+      // 替换新的 componentInstance
       const { cache, keys } = this
       //获取该组件的key
       const key: ?string = vnode.key == null
@@ -117,14 +121,14 @@ export default {
       //如果cache中包含这个key对应的vnode
       if (cache[key]) {
         //将新渲染的vnode的vm实例等于旧vnode的vm实例
-        //这样vm就是之前的vm，其中的数据就得以保留
+        /**这样vm就是之前的vm，其中的数据就得以保留**/
         vnode.componentInstance = cache[key].componentInstance
         // make current key freshest
         //当当前组件被使用过后会把它放到keys数组(栈)的最上面,在数组中更新这个vnode
         remove(keys, key)
         keys.push(key)
       } else {
-        //如果cache中没有这个组件则在cache中记录这个组件
+        //如果cache中没有这个组件则在cache中保存旧的 vnode（其中含有旧的 vm 实例）
         cache[key] = vnode
         keys.push(key)
         // prune oldest entry
