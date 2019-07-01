@@ -160,8 +160,9 @@ export default class Watcher {
       this.newDepIds.add(id)
       this.newDeps.push(dep)
       //防止添加多余的dep
+      // （当视图更新时会重新收集依赖，此时不变的部分也会重新收集依赖，为了防止多次收集同一个依赖）
       if (!this.depIds.has(id)) {
-        //如果即不存在于newDep也不存在于dep就执行addSub,将这个watcher实例添加到传入的dep参数的subs属性(数组)中
+        //如果不是重复的 wathcer，则将这个watcher添加到传入的dep参数的subs属性(数组)中
         dep.addSub(this)
       }
     }

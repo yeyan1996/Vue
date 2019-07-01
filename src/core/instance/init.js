@@ -114,7 +114,6 @@ export function initInternalComponent (vm: Component, options: InternalComponent
   }
 }
 
-//Ctor为Vue
 export function resolveConstructorOptions (Ctor: Class<Component>) {
   let options = Ctor.options
   if (Ctor.super) {
