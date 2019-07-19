@@ -62,6 +62,11 @@ export function genElement (el: ASTElement, state: CodegenState): string {
     return genStatic(el, state)
   } else if (el.once && !el.onceProcessed) {
     return genOnce(el, state)
+    /**v-for 和 v-if 非常不推荐在同一个节点中都使用**/
+    /**因为 v-for 优先级大于 v-if**/
+    // 所以会给 v-for 的每个节点都添加 v-if 的判断条件
+    // 导致 v-for 的列表长度很大时，每次都要进行 v-if 的判断影响性能
+    // 更重要的是它可以完全使用 computed 属性替代，在 v-for 的时候直接遍历需要渲染的节点
   } else if (el.for && !el.forProcessed) {
     return genFor(el, state)
   } else if (el.if && !el.ifProcessed) {
