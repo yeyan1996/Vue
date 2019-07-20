@@ -34,6 +34,7 @@ export default class Dep {
   depend () {
     if (Dep.target) {
       //Dep.target是一个watcher
+      // 给当前 dep 实例，添加栈顶的 watcher
       Dep.target.addDep(this)
     }
   }

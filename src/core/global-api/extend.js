@@ -54,8 +54,8 @@ export function initExtend (Vue: GlobalAPI) {
     if (Sub.options.props) {
       initProps(Sub)
     }
-    //这里已经提前把computed属性放到了组件的原型上，提前执行了defineComputed函数生成了属性的getter（src/core/instance/state.js:225）
-    //因为可以让多个组件共享computed属性，节约性能
+    //这里已经提前把computed属性放到了组件的原型对象上，提前执行了defineComputed函数生成了属性的getter（src/core/instance/state.js:225）
+    //因为可以让多个组件共享computed,props属性
     if (Sub.options.computed) {
       initComputed(Sub)
     }

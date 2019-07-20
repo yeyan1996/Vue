@@ -161,6 +161,7 @@ export function createPatchFunction (backend) {
     const data = vnode.data
     const children = vnode.children
     const tag = vnode.tag
+    // 元素节点
     if (isDef(tag)) {
       if (process.env.NODE_ENV !== 'production') {
         if (data && data.pre) {
@@ -247,7 +248,7 @@ export function createPatchFunction (backend) {
       // it should've created a child instance and mounted it. the child
       // component also has set the placeholder vnode's elm.
       // in that case we can just return the element and be done.
-      // 当vnode中有组件的实例(即已经执行了init钩子,实例化子组件实例并且生成了DOM节点)
+      // 当vnode中有组件的实例(即执行了init钩子,实例化子组件实例并且生成了DOM节点)
       if (isDef(vnode.componentInstance)) { //createElm之后的插入节点逻辑放到这里,并且返回true跳出createElm函数
         // 在递归遍历父子组件的过程中,子组件先插入再是父组件
         // 将当前组件下面的子组件 vnode 放入 insertedVnodeQueue 数组中（用来触发 mounted 钩子）
