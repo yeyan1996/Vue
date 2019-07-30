@@ -480,22 +480,22 @@ export function createPatchFunction (backend) {
         oldStartVnode = oldCh[++oldStartIdx] // Vnode has been moved left
       } else if (isUndef(oldEndVnode)) {
         oldEndVnode = oldCh[--oldEndIdx]
-      } else if (sameVnode(oldStartVnode, newStartVnode)) {
+      } else if (sameVnode(oldStartVnode, newStartVnode)) { // 旧前 = 新前
         //符合某个条件会递归调用patchVnode遍历子节点的更新情况
         patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
         oldStartVnode = oldCh[++oldStartIdx]
         newStartVnode = newCh[++newStartIdx]
-      } else if (sameVnode(oldEndVnode, newEndVnode)) {
+      } else if (sameVnode(oldEndVnode, newEndVnode)) { // 旧后 = 新后
         patchVnode(oldEndVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx)
         oldEndVnode = oldCh[--oldEndIdx]
         newEndVnode = newCh[--newEndIdx]
-      } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
+      } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right 旧前 = 新后
         //旧的第一个 = 新的最后一个 则将旧的移动到最后一个
         patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx)
         canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm))
         oldStartVnode = oldCh[++oldStartIdx]
         newEndVnode = newCh[--newEndIdx]
-      } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
+      } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left 旧后 = 新前
         //旧的最后一个 = 新的第一个 则将旧的节点插入到第一个
         patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
         canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
@@ -530,7 +530,7 @@ export function createPatchFunction (backend) {
         newStartVnode = newCh[++newStartIdx]
       }
     }
-    /**diff移动节点的时候,只是复用旧节点并且复制一份指定位置,并不会创建节点(创建节点开销很大)**/
+    /**diff移动节点的时候,会将旧节点的 elm 属性插入到新 vode 的指定位置,并不会创建节点(创建节点开销很大)**/
     /**所以会有2个一模一样的节点,下面的操作会直接删除多余的节点**/
     //旧节点遍历完,而新节点还有
     //则将新节点没有遍历完的节点插入旧节点数组的最后
