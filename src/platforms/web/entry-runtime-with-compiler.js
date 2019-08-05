@@ -13,10 +13,14 @@ const idToTemplate = cached(id => {
   const el = query(id)
   return el && el.innerHTML
 })
-// 缓存了运行时版本定义的mount
+/**
+ * 缓存了运行时版本定义的mount
+ * 为的是让完整版和运行时解耦
+ * 运行时只接受 render 函数，完整版本会将 template/外部 html/render 函数统一变成 render 函数再运行运行时版本
+ * **/
 const mount = Vue.prototype.$mount
 
-// 完整构建版本的$mount(没有render函数会调用编译,最后运行运行时版本的mount函数)
+// 完整构建版本的$mount(没有render函数会调用编译,最后再运行运行时版本的mount函数)
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
