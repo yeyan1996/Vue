@@ -57,10 +57,12 @@ export function resolveAsyncComponent (
     return factory.loadingComp
   }
 
+  // 可能有多个父组件依赖异步组件，所以需要同时所有依赖的父组件刷新视图
   if (isDef(factory.contexts)) {
     // already pending
     factory.contexts.push(context)
   } else {
+    // 将 vm 实例保存在 contexts 属性中，用来等组件解析完毕后刷新视图
     const contexts = factory.contexts = [context]
     let sync = true
 
@@ -98,7 +100,9 @@ export function resolveAsyncComponent (
         forceRender(true)
       }
     })
-    //如果使用Promise的异步组件,factory为()=>import(.......)这个函数，res为一个Promise对象（res也可能是对象即使用高级异步组件）
+    // 如果使用动态 import 版本的异步组件
+    // factory 为 () => import(...) 函数
+    // res 为一个 Promise 对象（res也可能是对象即使用高级异步组件）
     const res = factory(resolve, reject)
 
     if (isObject(res)) {

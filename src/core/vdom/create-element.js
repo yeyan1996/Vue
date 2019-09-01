@@ -67,6 +67,7 @@ export function _createElement (
     return createEmptyVNode()
   }
   // object syntax in v-bind
+  // component 组件，通过 is 的值来映射成对应的 tag
   if (isDef(data) && isDef(data.is)) {
     tag = data.is
   }
@@ -88,6 +89,7 @@ export function _createElement (
     }
   }
   // support single function children as default scoped slot
+  // 含有作用域插槽时为函数
   if (Array.isArray(children) &&
     typeof children[0] === 'function'
   ) {
@@ -115,11 +117,10 @@ export function _createElement (
         config.parsePlatformTagName(tag), data, children,
         undefined, undefined, context
       )
-
-      // 否则是一个注册过的组件(非正常的html标签)
+      // 否则是一个自定义组件(非正常的html标签)
     } else if (
       (!data || !data.pre) &&
-      //根据Ctor判断是否为Vue（全局）或者是子组件的构造函数（局部），来决定为全局/局部的组件/指令/过滤器注册
+      // 根据Ctor判断是否为Vue（全局）或者是子组件的构造函数（局部），来决定为全局/局部的组件/指令/过滤器注册
       isDef(Ctor = resolveAsset(context.$options, 'components', tag))
     ) {
       // component

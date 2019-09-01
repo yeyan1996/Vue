@@ -430,7 +430,13 @@ export function mergeOptions (
  * This function is used because child instances need access
  * to assets defined in its ancestor chain.
  */
-//type为资源类型:指令/组件/过滤器,传进来的options会有2种（父类Vue.options/子类options）
+// type 为以下三种资源类型:
+// 1. 指令
+// 2. 组件
+// 3. 过滤器
+// 传进来的 options 会有2种情况
+// 1. 父类 Vue.options
+// 2. 子类 options
 export function resolveAsset (
   options: Object,
   type: string,
@@ -445,12 +451,14 @@ export function resolveAsset (
   //返回这个包含所有组件/指令/构造器对象的某个构造函数（src/core/global-api/assets.js:37），并准备生成组件（create-element.js）
   const assets = options[type]
   // check local registration variations first
+  // 非全局组件/指令/过滤器的情况
   if (hasOwn(assets, id)) return assets[id]
   const camelizedId = camelize(id)
   if (hasOwn(assets, camelizedId)) return assets[camelizedId]
   const PascalCaseId = capitalize(camelizedId)
   if (hasOwn(assets, PascalCaseId)) return assets[PascalCaseId]
   // fallback to prototype chain
+  // 降级方案：去原型链上查找是否是全局组件/指令/过滤器
   const res = assets[id] || assets[camelizedId] || assets[PascalCaseId]
   if (process.env.NODE_ENV !== 'production' && warnMissing && !res) {
     warn(
