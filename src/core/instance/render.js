@@ -25,6 +25,9 @@ export function initRender (vm: Component) {
   //vm为子组件
   //options._renderChildren为子组件在父组件中包裹的children
   //renderContext为父节点
+  // $slots 会在 renderSlot 中被渲染成虚拟 DOM（src/core/instance/render-helpers/render-slot.js）
+  // $slots 是当前组件所携带的所有插槽集合，即父组件传给当前组件的插槽
+  /*** 2.6版本统一使用 scopedSlots */
   vm.$slots = resolveSlots(options._renderChildren, renderContext)
   vm.$scopedSlots = emptyObject
   // bind the createElement fn to this instance
