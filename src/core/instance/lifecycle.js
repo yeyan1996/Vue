@@ -217,9 +217,11 @@ export function mountComponent (
   // we set this to vm._watcher inside the watcher's constructor
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
-  //实例化一个渲染watcher
-  /**在实例化渲染watcher过程中会执行上面定义的updateComponent生成dom节点**/
-  //内部this.value = this.get() 其中get函数会执行updateComponent
+  // 实例化一个渲染 watcher
+  /**在实例化渲染watcher过程中会立即执行上面定义的updateComponent生成dom节点**/
+  // 内部 this.value = this.get() 其中 get 函数会执行 updateComponent
+  // 同时此时 Vue 创建视图是同步的（不会进入 schedulerQueue ，不会触发 beforeUpdate/updated）
+  // 而之后更新视图是异步的 (同时会触发 beforeUpdate/updated)
   new Watcher(vm, updateComponent, noop, {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {
