@@ -243,9 +243,12 @@ export function mountComponent (
   return vm
 }
 
-//更新子组件的props和listeners
+// 对于一些在 diff 算法中可复用的节点
+// Vue 只会执行 prepatch 钩子来最小程度更新
+// prepatch 钩子会执行以下函数
+// 只更新子组件的props和listeners
 export function updateChildComponent (
-  vm: Component, //新旧节点共用的vm实例
+  vm: Component, //新旧节点共用的子组件 vm 实例
   propsData: ?Object, //新vnode的props对象
   listeners: ?Object,//新vnode的listeners
   parentVnode: MountedComponentVNode, //父组件占位符vnode
@@ -259,7 +262,8 @@ export function updateChildComponent (
 
   // determine whether component has slot children
   // we need to do this before overwriting $options._renderChildren
-  //因为是组件的更新,hasChildren判断的是组件是否有子节点,即是否含有给子组件插槽填入的节点
+  // 因为是组件的更新,hasChildren判断的是组件是否有子节点
+  // 即是否含有给子组件插槽填入的节点
   const hasChildren = !!(
     renderChildren ||               // has new static slots
     vm.$options._renderChildren ||  // has old static slots
@@ -290,7 +294,8 @@ export function updateChildComponent (
       const key = propKeys[i]
       // 获取到 vm 实例 props 的配置项（只包含定义时的配置项，不会拥有运行时的值）
       const propOptions: any = vm.$options.props // wtf flow?
-      //将新的props值赋值给子组件(<hello-world :flag="flag"></hello-world>)
+      // 将新的props值赋值给子组件
+      // e.g: <hello-world :flag="flag"></hello-world>
       /**赋值时会触发对应key的setter函数,执行dep实例的notify方法,最后触发子组件的渲染watcher的update方法渲染视图**/
       props[key] = validateProp(key, propOptions, propsData, vm)
     }
@@ -309,8 +314,9 @@ export function updateChildComponent (
   // resolve slots + force update if has children
   //插槽填入的节点的更新
   if (hasChildren) {
-    //对于普通slot，是在父组件渲染再在子组件时中插入的
-    //子组件对于插槽的变化不是响应式的，所以每次插槽节点更新的时候都会通知子组件重新更新插槽（$slots）
+    // 对于普通slot，是在父组件渲染再在子组件时中插入的
+    // 子组件对于插槽的变化不是响应式的
+    // 所以每次插槽节点更新的时候都需要主动通知子组件重新更新插槽（$slots）
     vm.$slots = resolveSlots(renderChildren, parentVnode.context)
     //更新插槽后需要强制刷新子组件的视图，因为普通插槽最终是在子组件中显示的
     //重新走一遍render => patch 逻辑

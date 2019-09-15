@@ -453,7 +453,7 @@ export function createPatchFunction (backend) {
       removeNode(vnode.elm)
     }
   }
-  //diff算法
+  /** diff算法 */
   //oldCh是一个数组 newCh也是一个数组
   function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
     let oldStartIdx = 0
