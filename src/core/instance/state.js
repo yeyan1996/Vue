@@ -357,7 +357,7 @@ function createWatcher (
   if (typeof handler === 'string') {
     handler = vm[handler]
   }
-  //调用$watch（371）传入监听的属性，handler和配置项
+  //调用$watch（389）传入监听的属性，handler和配置项
   return vm.$watch(expOrFn, handler, options)
 }
 

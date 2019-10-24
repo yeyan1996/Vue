@@ -48,14 +48,18 @@ const componentVNodeHooks = {
       //直接执行prepatch更新逻辑
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
-      //createComponentInstanceForVnode通过调用子组件的构造器返回子组件的实例
-      // （会触发Vue.init，并且触发beforeCreate和created两个生命周期）
+      // createComponentInstanceForVnode 通过子组件的构造器（构造函数）生成子组件的实例
+      // 实例化时会触发Vue.init，同时触发 beforeCreate 和 created 两个生命周期
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         //实例
         activeInstance
       )
-      /**子组件实例不会在Vue.init时候执行mount,因为没有el属性,而在这里主动执行mountComponent函数(src/core/instance/lifecycle.js:148)**/
+      /**
+       * 子组件实例不会在 Vue.init 时候执行 mount,因为没有 el 属性
+       * 取而代之在这里主动执行 mountComponent 函数，手动挂载
+       * (src/core/instance/lifecycle.js:148)
+       * **/
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
