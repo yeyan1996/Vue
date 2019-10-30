@@ -152,7 +152,8 @@ export default class Watcher {
   /**
    * Add a dependency to this directive.
    */
-  //给watcher实例的deps属性添加一个dep,给dep的subs属性添加一个watcher
+  // 给watcher实例的deps属性添加一个dep
+  // 给dep的subs属性添加一个watcher
   addDep (dep: Dep) {
     const id = dep.id
     if (!this.newDepIds.has(id)) {
@@ -265,11 +266,12 @@ export default class Watcher {
   /**
    * Depend on all deps collected by this watcher.
    */
-  //一般只有计算属性的watcher才可以收集依赖(收集当前栈顶的Dep.target)
+  // 一般只有计算属性的watcher才可以收集依赖(收集当前栈顶的Dep.target)
   depend () {
     let i = this.deps.length
     while (i--) {
-      // 给computed watcher内部的保存的发布者(在之前evaluate时保存的dep)收集当前栈顶的watcher(可能是渲染watcher)
+      // 给computed watcher内部的保存的发布者(在之前evaluate时保存的dep)收集当前栈顶的watcher
+      // 此时栈顶的 watcher 已不是这个 computed watcher（可能是渲染watcher或者其他watcher)
       this.deps[i].depend()
     }
   }

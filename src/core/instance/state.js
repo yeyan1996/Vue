@@ -258,8 +258,7 @@ export function defineComputed (
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
-//当别的watcher的依赖项含有当前计算属性会触发这个计算属性的getter
-
+//当别的watcher的依赖项含有当前计算属性时会触发这个计算属性的getter
 function createComputedGetter (key) {
   // 返回当前computed属性的getter函数
   // 只有当某个地方使用到了计算属性才会触发getter(模板收集依赖/其他computed函数里依赖了这个计算属性)
