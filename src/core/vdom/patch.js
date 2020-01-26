@@ -491,6 +491,7 @@ export function createPatchFunction (backend) {
         newEndVnode = newCh[--newEndIdx]
       } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right 旧前 = 新后
         //旧的第一个 = 新的最后一个 则将旧的移动到最后一个
+        /**insertBefore： 如果插入的节点已经存在在父节点的子节点列表中，那么它会移动目标节点至相应位置*/
         patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx)
         canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm))
         oldStartVnode = oldCh[++oldStartIdx]
@@ -621,7 +622,7 @@ export function createPatchFunction (backend) {
     // 更新子组件 vm 引用到的一些props和事件
     // 其他的属性则会直接复用之前的 vm 实例
     if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
-      /**prepatch钩子内只会更新props(src/core/vdom/create-component.js:63),同时触发子组件的渲染watcher进行重新渲染**/
+      /**prepatch钩子内只会更新props(src/core/vdom/create-component.js:67),同时触发子组件的渲染watcher进行重新渲染**/
       i(oldVnode, vnode)
     }
      // 获取旧 vnode 节点的子 vnode 节点
@@ -800,27 +801,29 @@ export function createPatchFunction (backend) {
     let isInitialPatch = false
     const insertedVnodeQueue = []
 
-    //当是组件初始化生成dom节点的时候，oldVnode(即vm.$el)为空，创建组件的dom节点
+    /**非根实例第一次挂载*/
     if (isUndef(oldVnode)) {
       // empty mount (likely as component), create new root element
       isInitialPatch = true
-      /**创建组件节点**/
+      // 创建组件节点
       createElm(vnode, insertedVnodeQueue)
     } else {
-      /**否则为组件树更新**/
       const isRealElement = isDef(oldVnode.nodeType)
-      //不是一个真实的dom节点且是一个相似节点,会进行diff算法逐层比对
-      //相似节点:最外层的vnode(不包括children)相同
+      // 不是一个真实的dom节点且是一个相似节点,会进行diff算法逐层比对
+      // 相似节点:最外层的vnode(不包括children)相同
+      /**组件树更新*/
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
         // patch existing root node
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
       } else {
-        //如果是一个真实的dom节点，即Vue第一次进行挂载（id="app"）
+        //如果 oldVnode 是一个真实的dom节点，即Vue第一次进行挂载，即根实例挂载（id="app"）
+        /**根实例第一次挂载*/
+        // 貌似找不到什么不是 sameVnode，同时 isRealElement 为 false 的逻辑
         if (isRealElement) {
           // mounting to a real element
           // check if this is server-rendered content and if we can perform
           // a successful hydration.
-          //SSR相关为false
+          // SSR相关，判断结果为false
           if (oldVnode.nodeType === 1 && oldVnode.hasAttribute(SSR_ATTR)) {
             oldVnode.removeAttribute(SSR_ATTR)
             hydrating = true
@@ -845,6 +848,8 @@ export function createPatchFunction (backend) {
           // 将真实的dom($el)转换为vnode
           oldVnode = emptyNodeAt(oldVnode)
         }
+
+        /**创建组件节点*/
         // replacing existing element
         const oldElm = oldVnode.elm
         // parent DOM,表示更新后的 DOM 需要插入到这个 DOM 下面

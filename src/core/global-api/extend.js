@@ -17,7 +17,7 @@ export function initExtend (Vue: GlobalAPI) {
    * Class inheritance
    */
   // 继承Vue构造函数的一些方法和属性（传入组件的options参数）返回组件的构造器
-  // 当给render函数的tag配置项是一个组件对象会转变成一个组件构造器（src/core/vdom/create-component.js:126），extendOptions为组件对象
+  // 当给render函数的tag配置项是一个组件对象会转变成一个组件构造器（src/core/vdom/create-component.js:143），extendOptions为组件对象
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {}
     const Super = this

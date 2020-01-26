@@ -80,7 +80,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
       vm.$el = vm.__patch__(/*第一次渲染这个值为undefined*/vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
-      //如果有prevVnode,即是子组件vnode的__patch__方法,会传入2个参数
+      // 如果有prevVnode,即是子组件vnode的__patch__方法,会传入2个参数，即更新节点
       vm.$el = vm.__patch__(prevVnode, vnode)
     }
     restoreActiveInstance()
@@ -151,7 +151,8 @@ export function lifecycleMixin (Vue: Class<Component>) {
   }
 }
 
-//挂载节点(执行$mount会执行这个函数)
+// 挂载节点(执行$mount会执行这个函数)
+// /Users/bytedance/Desktop/store/Vue/src/platforms/web/runtime/index.js
 export function mountComponent (
   vm: Component,
   el: ?Element,
@@ -207,7 +208,7 @@ export function mountComponent (
     updateComponent = () => {
       //hydrating和SSR有关一般为false
       /**
-       * 一般会走到这里,_render方法将实例转化为vnode(src/core/instance/render.js:68)
+       * 一般会走到这里,_render方法将实例转化为vnode(src/core/instance/render.js:72)
        * 定义了_update(62)，它会执行__patch__方法将vnode转为dom节点（核心逻辑）
        * **/
       vm._update(vm._render(), hydrating)

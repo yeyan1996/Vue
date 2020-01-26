@@ -38,11 +38,11 @@ export function initMixin (Vue: Class<Component>) {
       // 初始化组件的options（包括将父组件的监听事件赋值给子组件）
       initInternalComponent(vm, options)
     } else {
-      //如果不是一个组件，即main.js声明的根实例，则合并传入构造函数的参数到$options（合并配置）
+      //如果不是一个组件，即main.js声明的根实例，则将 Vue.options 和new Vue时候传入的参数合并到 $options 中
       vm.$options = mergeOptions(
         //返回Vue构造函数的options属性最初定义好的一些属性（src/core/global-api/index.js：47）
         resolveConstructorOptions(vm.constructor),
-        //new Vue时候传入构造函数的对象
+        //new Vue时候传入的参数
         options || {},
         vm
       )
