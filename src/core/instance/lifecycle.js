@@ -76,7 +76,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // based on the rendering backend used.
     if (!prevVnode) {
       // initial render
-      /** 生成真实的dom节点保存在$el属性中(src/core/vdom/patch.js:781) **/
+      /** 生成真实的dom节点保存在$el属性中(src/core/vdom/patch.js:794) **/
       vm.$el = vm.__patch__(/*第一次渲染这个值为undefined*/vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
@@ -387,6 +387,8 @@ export function callHook (vm: Component, hook: string) {
       }
     }
   }
+  // 触发 hook 事件
+  // 可以让父组件监听到子组件的生命周期
   if (vm._hasHookEvent) {
     vm.$emit('hook:' + hook)
   }

@@ -130,7 +130,7 @@ export function createPatchFunction (backend) {
 
   let creatingElmInVPre = 0
 
-  //patch最终会调用这个createElm将vnode转换为dom节点，并且插入到父DOM节点下面
+  //patch最终会调用它将vnode转换为dom节点，并且插入到父DOM节点下面
   //如果是组件vnode创建的dom节点只有前2个有值,第一个参数为组件的vnode,第二个参数为空数组
   function  createElm (
     vnode,
@@ -244,6 +244,7 @@ export function createPatchFunction (backend) {
         //对于keepAlive缓存过的vnode则会跳过init进入prepatch钩子
         i(vnode, false /* hydrating */)
       }
+      /**由于上一步会递归进行，所以此时已是最底层的子组件*/
       // after calling the init hook, if the vnode is a child component
       // it should've created a child instance and mounted it. the child
       // component also has set the placeholder vnode's elm.
@@ -664,7 +665,7 @@ export function createPatchFunction (backend) {
   function invokeInsertHook (vnode, queue, initial) {
     // delay insert hooks for component root nodes, invoke them after the
     // element is really inserted
-    // 将 insert 钩子延迟到插入到真实 DOM 节点之后触发
+    // 将 insert 钩子延迟到插入真实 DOM 节点之后触发
     if (isTrue(initial) && isDef(vnode.parent)) {
       vnode.parent.data.pendingInsert = queue
     } else {
