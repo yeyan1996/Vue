@@ -532,8 +532,7 @@ export function createPatchFunction (backend) {
         newStartVnode = newCh[++newStartIdx]
       }
     }
-    /**diff移动节点的时候,会将旧节点的 elm 属性插入到新 vode 的指定位置,并不会创建节点(创建节点开销很大)**/
-    /**所以会有2个一模一样的节点,下面的操作会直接删除多余的节点**/
+    /**diff移动节点的时候,会通过 insertBefore 将旧的 DOM 节点移动到新的位置,并不会创建节点(创建节点开销很大)**/
     //旧节点遍历完,而新节点还有
     //则将新节点没有遍历完的节点插入旧节点数组的最后
     if (oldStartIdx > oldEndIdx) {
